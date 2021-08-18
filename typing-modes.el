@@ -1,4 +1,4 @@
-;;; type-modes.el --- Typing in different modes to allow editing of seamingly unrelated file positions                     -*- lexical-binding: t; -*-
+;;; typing-categories.el --- Typing in different categories to allow editing of seamingly unrelated file positions                     -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021 Dionisios Spiliopoulos
 
@@ -27,22 +27,24 @@
 
 ;; variables
 
-(defvar typing-mode-buffer-prefix "~typing_modes::" "The prefix of typing-mode buffers.")
-(defvar typing-mode nil "Tracks whether typing-mode is enabled.")
-(defvar typing-mode-num 0 "Tracks the current typing-mode number.\nCan be a single digit number.")
-(setq-default typing-mode nil)
-(setq-default typing-mode-num 0)
+(defvar typing-category-buffer-prefix "~typing_categories::" "The prefix of typing-category buffers.")
+(defvar typing-category nil "Tracks whether typing-category is enabled.")
+(defvar typing-category-num 0 "Tracks the current typing-category number.\nCan be a single digit number.")
+(defvar typing-category-priv-indent nil "Tracks the indentations.")
+(setq-default typing-category nil)
+(setq-default typing-category-num 0)
+
 
 ;; helper functions
 
-(defun typing-mode-buffer ()
+(defun typing-category-buffer ()
   "Get the helper typing mode buffer name."
-  (concat typing-mode-buffer-prefix (buffer-name))
+  (concat typing-category-buffer-prefix (buffer-name))
   )
 
-(defun inverse-typing-mode-buffer ()
-  "Return the buffer name which corresonds to the current typing-mode buffer."
-  (substring-no-properties (format "%s" (current-buffer)) (length typing-mode-buffer-prefix))
+(defun inverse-typing-category-buffer ()
+  "Return the buffer name which corresonds to the current typing-category buffer."
+  (substring-no-properties (format "%s" (current-buffer)) (length typing-category-buffer-prefix))
   )
 
 (defun is-whitespace (c)
@@ -50,27 +52,27 @@
   (or (eq c ?\n) (eq c ?\t) (eq c ?\v) (eq c ?\s))
   )
 
-(defun typing-mode-delete-char ()
+(defun typing-category-delete-char ()
   "Delete the same character in the typing mode buffer."
   (let ((point (point)))
-    (with-current-buffer (typing-mode-buffer)
+    (with-current-buffer (typing-category-buffer)
       (goto-char point)
       (delete-char 1)
       )
     )
   )
 
-(defun typing-mode-delete-backward-char ()
+(defun typing-category-delete-backward-char ()
   "Delete the same character in the typing mode buffer."
   (let ((point (- (point) 1)))
-    (with-current-buffer (typing-mode-buffer)
+    (with-current-buffer (typing-category-buffer)
       (goto-char point)
       (delete-char 1)
       )
     )
   )
 
-(defun typing-mode-hungry-delete-forward ()
+(defun typing-category-hungry-delete-forward ()
   "Hungry delete the same characters in the typing mode buffer."
   (save-excursion
     (let ((point (point))
@@ -82,7 +84,7 @@
 	    )
 	(setq chars 1)
 	)
-      (with-current-buffer (typing-mode-buffer)
+      (with-current-buffer (typing-category-buffer)
 	(goto-char point)
 	(delete-char chars)
 	)
@@ -90,7 +92,7 @@
     )
   )
 
-(defun typing-mode-hungry-delete-backward ()
+(defun typing-category-hungry-delete-backward ()
   "Hungry delete the same characters in the typing mode buffer."
   (save-excursion
     (let ((point (point))
@@ -101,7 +103,7 @@
 	    (goto-char (1- (point))))
 	(setq chars 1)
 	)
-      (with-current-buffer (typing-mode-buffer)
+      (with-current-buffer (typing-category-buffer)
 	(goto-char (- point chars))
 	(delete-char chars)
 	)
@@ -109,91 +111,110 @@
     )
   )
 
-(defun enable-typing-mode ()
-  "Enable typing-mode."
-  (setq-local typing-mode t)
-  (setq-local typing-mode-num 0)
-  (let ((helper (typing-mode-buffer))
+(defun enable-typing-category ()
+  "Enable typing-category."
+  (setq-local typing-category t)
+  (setq-local typing-category-num 0)
+  (let ((helper (typing-category-buffer))
 	(characters (- (point-max) (point-min))))
     (generate-new-buffer helper)
     (with-current-buffer (get-buffer helper)
       (insert-char ?0 characters))
     )
-  (message "Typing Modes enabled")
+  (message "Typing categories enabled")
   )
 
-(defun disable-typing-mode ()
-  "Disable typing-mode."
-  (setq-local typing-mode nil)
-  (let ((helper (typing-mode-buffer)))
+(defun disable-typing-category ()
+  "Disable typing-category."
+  (setq-local typing-category nil)
+  (let ((helper (typing-category-buffer)))
     (kill-buffer helper)
     )
-  (message "Typing Modes disabled")
+  (message "Typing categories disabled")
   )
 
 ;; functions to be hooked
 
-(defun typing-mode-post-self-insert ()
+(defun typing-category-post-self-insert ()
   "Insert the mode num in the helper buffer."
-  (when typing-mode
-    (let ((num typing-mode-num)
-	  (point (- (point) 1)))
-      (with-current-buffer (typing-mode-buffer)
-	(goto-char point)
-	(insert-char (+ num ?0))
+  (when typing-category
+    (dotimes (count (or current-prefix-arg 1))
+      (let ((num typing-category-num)
+	    (point (- (point) 1)))
+	(with-current-buffer (typing-category-buffer)
+	  (goto-char point)
+	  (insert-char (+ num ?0))
+	  )
 	)
       )
     )
   )
 
-(defun typing-mode-pre-command ()
+(defun typing-category-count-indentation ()
+  (save-excursion
+    (let ((count 0))
+      (beginning-of-line)
+      (while (is-whitespace (char-after))
+	(setq count (1+ count))
+	(forward-char)
+	)
+      count
+      )
+    )
+  )
+
+(defun typing-category-pre-command ()
   "Post command hook to track for character deletes."
-  (when typing-mode
+  (when typing-category
     (message "%s" this-command) ;for debugging
     (when (eq this-command 'hungry-delete-forward)
-      (typing-mode-hungry-delete-forward)
+      (typing-category-hungry-delete-forward)
       )
     (when (eq this-command 'hungry-delete-backward)
-      (typing-mode-hungry-delete-backward)
+      (typing-category-hungry-delete-backward)
       )
     (when (eq this-command 'delete-char)
-      (typing-mode-delete-char)
+      (typing-category-delete-char)
       )
     (when (eq this-command 'backward-delete-char-untabify)
-      (typing-mode-backward-delete-char-untabify)
+      (typing-category-backward-delete-char-untabify)
       )
     (when (eq this-command 'delete-backward-char)
-      (typing-mode-delete-backward-char)
+      (typing-category-delete-backward-char)
+      )
+    (when (string-match "indent" (format "%s" this-command))
+      (setq-local typing-category-priv-indent (cons (point) (typing-category-count-indentation)))
       )
     )
   )
 
 ;; commands
 
-(defun typing-mode ()
-  "Toggle typing-mode."
+(defun typing-category ()
+  "Toggle typing-category."
   (interactive)
-  (if typing-mode (disable-typing-mode) (enable-typing-mode))
+  (if typing-category (disable-typing-category) (enable-typing-category))
   )
 
-(defun change-typing-mode (MODE)
-  "Change the typing-mode of the typing-mode package.\n(MODE): the mode to change to."
+(defun change-typing-category (MODE)
+  "Change the typing-category of the typing-category package.\n(MODE): the mode to change to."
   (interactive "NEnter mode (0-9): ")
-  (setq-local typing-mode-num MODE)
+  (unless typing-category (enable-typing-category))
+  (setq-local typing-category-num MODE)
   )
 
-(defun delete-typing-mode (MODE)
+(defun delete-typing-category (MODE)
   "Delete each character belonging to typing mode (MODE)."
   (interactive "NEnter mode to delete(0-9): ")
   (setq MODE (+ ?0 MODE))
   (save-excursion
-    (with-current-buffer (typing-mode-buffer)
+    (with-current-buffer (typing-category-buffer)
       (goto-char 1)
       (while (not (eq (point) (point-max)))
 	(if (eq (char-after) MODE)
 	    (let ((point (point)))
 	      (delete-char 1)
-	      (with-current-buffer (inverse-typing-mode-buffer)
+	      (with-current-buffer (inverse-typing-category-buffer)
 		(goto-char point)
 		(delete-char 1)
 		)
@@ -205,14 +226,16 @@
     )
   )
 
-(add-hook 'post-self-insert-hook 'typing-mode-post-self-insert)
-(add-hook 'pre-command-hook 'typing-mode-pre-command)
+;; hooks
+
+(add-hook 'post-self-insert-hook 'typing-category-post-self-insert)
+(add-hook 'pre-command-hook 'typing-category-pre-command)
 
 ;; key bindings !!!!!! temporary
 
-(global-set-key (kbd "C-x t m") 'change-typing-mode)
-(global-set-key (kbd "C-x t t") 'typing-mode)
-(global-set-key (kbd "C-x t d") 'delete-typing-mode)
+(global-set-key (kbd "C-x t m") 'change-typing-category)
+(global-set-key (kbd "C-x t t") 'typing-category)
+(global-set-key (kbd "C-x t d") 'delete-typing-category)
 
 
 ;(provide 'typing-modes)
