@@ -54,39 +54,45 @@
 
 (defun typing-category-delete-char ()
   "Delete the same character in the typing categories buffer."
-  (let ((point (point)))
-    (with-current-buffer (typing-category-buffer)
-      (goto-char point)
-      (delete-char 1)
+  (unless (eq (point) (point-max))
+    (let ((point (point)))
+      (with-current-buffer (typing-category-buffer)
+	(goto-char point)
+	(delete-char 1)
+	)
       )
     )
   )
 
 (defun typing-category-delete-backward-char ()
   "Delete the same character in the typing categories buffer."
-  (let ((point (- (point) 1)))
-    (with-current-buffer (typing-category-buffer)
-      (goto-char point)
-      (delete-char 1)
+  (unless (eq (point) (point-min))
+    (let ((point (- (point) 1)))
+      (with-current-buffer (typing-category-buffer)
+	(goto-char point)
+	(delete-char 1)
+	)
       )
     )
   )
 
 (defun typing-category-hungry-delete-forward ()
   "Hungry delete the same characters in the typing categories buffer."
-  (save-excursion
-    (let ((point (point))
-	  (chars 0))
-      (if (is-whitespace (char-after))
-	  (while (is-whitespace (char-after))
-	    (setq chars (1+ chars))
-	    (goto-char (1+ (point)))
-	    )
-	(setq chars 1)
-	)
-      (with-current-buffer (typing-category-buffer)
-	(goto-char point)
-	(delete-char chars)
+  (unless (eq (point) (point-max))
+    (save-excursion
+      (let ((point (point))
+	    (chars 0))
+	(if (is-whitespace (char-after))
+	    (while (is-whitespace (char-after))
+	      (setq chars (1+ chars))
+	      (goto-char (1+ (point)))
+	      )
+	  (setq chars 1)
+	  )
+	(with-current-buffer (typing-category-buffer)
+	  (goto-char point)
+	  (delete-char chars)
+	  )
 	)
       )
     )
@@ -94,18 +100,20 @@
 
 (defun typing-category-hungry-delete-backward ()
   "Hungry delete the same characters in the typing categories buffer."
-  (save-excursion
-    (let ((point (point))
-	  (chars 0))
-      (if (is-whitespace (char-before))
-	  (while (is-whitespace (char-before))
-	    (setq chars (1+ chars))
-	    (goto-char (1- (point))))
-	(setq chars 1)
-	)
-      (with-current-buffer (typing-category-buffer)
-	(goto-char (- point chars))
-	(delete-char chars)
+  (unless (eq (point) (point-min))
+    (save-excursion
+      (let ((point (point))
+	    (chars 0))
+	(if (is-whitespace (char-before))
+	    (while (is-whitespace (char-before))
+	      (setq chars (1+ chars))
+	      (goto-char (1- (point))))
+	  (setq chars 1)
+	  )
+	(with-current-buffer (typing-category-buffer)
+	  (goto-char (- point chars))
+	  (delete-char chars)
+	  )
 	)
       )
     )
@@ -164,7 +172,7 @@
   )
 
 (defun typing-category-pre-command ()
-  "Post command hook to track for character deletes."
+  "Pre command hook to track for character differences."
   (when typing-category
     (message "%s" this-command) ;for debugging
     (when (eq this-command 'hungry-delete-forward)
@@ -183,7 +191,33 @@
       (typing-category-delete-backward-char)
       )
     (when (string-match "indent" (format "%s" this-command))
-      (setq-local typing-category-priv-indent (cons (point) (typing-category-count-indentation)))
+      (setq-local typing-category-priv-indent  (typing-category-count-indentation))
+      )
+    )
+  )
+
+(defun typing-category-post-command ()
+  "Post command hook to track for character differences."
+  (when typing-category
+    (when (string-match "indent" (format "%s" this-command))
+      (message (format "POST COMMAND %s" this-command))
+      (save-excursion
+	(let ((countafter (typing-category-count-indentation))
+	      (countbefore typing-category-priv-indent))
+	  (beginning-of-line)
+	  (let ((point (point)))
+	    (with-current-buffer (typing-category-buffer)
+	      (goto-char point)
+	      (when (> countbefore countafter)
+		(delete-char (- countbefore countafter))
+		)
+	      (when (< countbefore countafter)
+		(insert-char (+ typing-category-num ?0) (- countafter countbefore))
+		)
+	      )
+	    )
+	  )
+	)
       )
     )
   )
@@ -198,14 +232,14 @@
 
 (defun change-typing-category (CATEGORY)
   "Change the typing-category of the typing-category package.\n(CATEGORY): the mode to change to."
-  (interactive "NEnter mode (0-9): ")
+  (interactive "NEnter category (0-9): ")
   (unless typing-category (enable-typing-category))
   (setq-local typing-category-num CATEGORY)
   )
 
 (defun delete-typing-category (CATEGORY)
   "Delete each character belonging to typing mode (CATEGORY)."
-  (interactive "NEnter mode to delete(0-9): ")
+  (interactive "NEnter category to delete(0-9): ")
   (setq CATEGORY (+ ?0 CATEGORY))
   (save-excursion
     (with-current-buffer (typing-category-buffer)
@@ -230,6 +264,7 @@
 
 (add-hook 'post-self-insert-hook 'typing-category-post-self-insert)
 (add-hook 'pre-command-hook 'typing-category-pre-command)
+(add-hook 'post-command-hook 'typing-category-post-command)
 
 ;; key bindings !!!!!! temporary
 
