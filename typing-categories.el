@@ -38,7 +38,7 @@
 ;; helper functions
 
 (defun typing-category-buffer ()
-  "Get the helper typing mode buffer name."
+  "Get the helper typing categories buffer name."
   (concat typing-category-buffer-prefix (buffer-name))
   )
 
@@ -53,7 +53,7 @@
   )
 
 (defun typing-category-delete-char ()
-  "Delete the same character in the typing mode buffer."
+  "Delete the same character in the typing categories buffer."
   (let ((point (point)))
     (with-current-buffer (typing-category-buffer)
       (goto-char point)
@@ -63,7 +63,7 @@
   )
 
 (defun typing-category-delete-backward-char ()
-  "Delete the same character in the typing mode buffer."
+  "Delete the same character in the typing categories buffer."
   (let ((point (- (point) 1)))
     (with-current-buffer (typing-category-buffer)
       (goto-char point)
@@ -73,7 +73,7 @@
   )
 
 (defun typing-category-hungry-delete-forward ()
-  "Hungry delete the same characters in the typing mode buffer."
+  "Hungry delete the same characters in the typing categories buffer."
   (save-excursion
     (let ((point (point))
 	  (chars 0))
@@ -93,7 +93,7 @@
   )
 
 (defun typing-category-hungry-delete-backward ()
-  "Hungry delete the same characters in the typing mode buffer."
+  "Hungry delete the same characters in the typing categories buffer."
   (save-excursion
     (let ((point (point))
 	  (chars 0))
@@ -136,7 +136,7 @@
 ;; functions to be hooked
 
 (defun typing-category-post-self-insert ()
-  "Insert the mode num in the helper buffer."
+  "Insert the category number in the helper buffer."
   (when typing-category
     (dotimes (count (or current-prefix-arg 1))
       (let ((num typing-category-num)
@@ -196,22 +196,22 @@
   (if typing-category (disable-typing-category) (enable-typing-category))
   )
 
-(defun change-typing-category (MODE)
-  "Change the typing-category of the typing-category package.\n(MODE): the mode to change to."
+(defun change-typing-category (CATEGORY)
+  "Change the typing-category of the typing-category package.\n(CATEGORY): the mode to change to."
   (interactive "NEnter mode (0-9): ")
   (unless typing-category (enable-typing-category))
-  (setq-local typing-category-num MODE)
+  (setq-local typing-category-num CATEGORY)
   )
 
-(defun delete-typing-category (MODE)
-  "Delete each character belonging to typing mode (MODE)."
+(defun delete-typing-category (CATEGORY)
+  "Delete each character belonging to typing mode (CATEGORY)."
   (interactive "NEnter mode to delete(0-9): ")
-  (setq MODE (+ ?0 MODE))
+  (setq CATEGORY (+ ?0 CATEGORY))
   (save-excursion
     (with-current-buffer (typing-category-buffer)
       (goto-char 1)
       (while (not (eq (point) (point-max)))
-	(if (eq (char-after) MODE)
+	(if (eq (char-after) CATEGORY)
 	    (let ((point (point)))
 	      (delete-char 1)
 	      (with-current-buffer (inverse-typing-category-buffer)
@@ -240,4 +240,4 @@
 
 ;(provide 'typing-modes)
 
-;;; typing-modes.el ends here
+;;; typing-categories.el ends here
