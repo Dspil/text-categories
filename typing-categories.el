@@ -21,7 +21,9 @@
 
 ;;; Commentary:
 
-;; Put a description of the package here
+;; While writing anything you can choose a category for which your next changes
+;; will belong to.  Default category is 0 and categories can be a single digit number.
+;; Any changes that belong to a certain category can be erased using delete-typing-category.
 
 ;;; Code:
 
@@ -134,6 +136,6 @@
 (global-set-key (kbd "C-x t t") 'typing-category)
 (global-set-key (kbd "C-x t d") 'delete-typing-category)
 
-;(provide 'typing-modes)          
-                                  
+					;(provide 'typing-modes)
+
 ;;; typing-categories.el ends here
