@@ -52,7 +52,7 @@
 ;; logic
 
 (defun typing-categories-after-changes-fun (beg end len)
-  "Do the corresponding change to the typing categories buffer at position (BEG)-(END) with previous length of string (LEN)."
+  "Do the corresponding change to the typing categories buffer at position (BEG)-(END) with previous length of string (LEN).  This function is hooked to 'after-change-functions'."
   (unless typing-category-deleting
     (let ((num (+ ?0 typing-category-num)))
       (with-current-buffer (typing-category-buffer)
@@ -64,17 +64,58 @@
     )
   )
 
+(defun typing-category-after-find-file ()
+  "Check if the file opened has a corresponding 'typing-category' file and load it."
+  (let ((typing-category-file
+	 (concat
+	  (file-name-directory (buffer-file-name))
+	  (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
+	  )))
+    (when
+      (file-exists-p
+       typing-category-file
+       )
+      (find-file-noselect typing-category-file)
+      (enable-typing-category t)
+      )
+    )
+  )
+
+(defun typing-category-after-save-file ()
+  "Check if typing-category is active when saving a file and save the typing-category corresponding buffer."
+  (when typing-category
+    (let ((typing-category-file
+	   (concat
+	    (file-name-directory (buffer-file-name))
+	    (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
+	    )))
+      (with-current-buffer (typing-category-buffer)
+	(write-file typing-category-file)
+	)
+      )
+    )
+  )
+
+(defun typing-category-after-kill-buffer ()
+  "Check if typing-category is active when killing a buffer to kill the typing-category corresponding buffer."
+  (when typing-category
+    (kill-buffer (typing-category-buffer))
+    )
+  )
+
 ;; enable-disable
 
-(defun enable-typing-category ()
-  "Enable typing-category."
+(defun enable-typing-category (&optional nocreate)
+  "Enable typing-category.  When (NOCREATE) is non nil a new buffer is not generated as one exists in the file system."
   (setq-local typing-category t)
-  (setq-local typing-category-num 0)
-  (let ((helper (typing-category-buffer))
-	(characters (- (point-max) (point-min))))
-    (generate-new-buffer helper)
-    (with-current-buffer (get-buffer helper)
-      (insert-char ?0 characters))
+  (unless nocreate
+    (setq-local typing-category-num 0)
+    (let ((helper (typing-category-buffer))
+	  (characters (- (point-max) (point-min))))
+      (generate-new-buffer helper)
+      (with-current-buffer (get-buffer helper)
+	(insert-char ?0 characters))
+      )
     )
   (add-hook 'after-change-functions 'typing-categories-after-changes-fun t t)
   (message "Typing categories enabled")
@@ -129,6 +170,12 @@
     )
   (setq-local typing-category-deleting nil)
   )
+
+;; hooks
+
+(add-hook 'find-file-hook 'typing-category-after-find-file)
+(add-hook 'after-save-hook 'typing-category-after-save-file)
+(add-hook 'kill-buffer-hook 'typing-category-after-kill-buffer)
 
 ;; key bindings !!!!!! temporary
 
