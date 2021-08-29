@@ -124,6 +124,15 @@
 (defun disable-typing-category ()
   "Disable typing-category."
   (setq-local typing-category nil)
+  (let ((typing-category-file
+	 (concat
+	  (file-name-directory (buffer-file-name))
+	  (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
+	  )))
+    (when (file-exists-p typing-category-file)
+      (delete-file typing-category-file)
+      )
+    )
   (let ((helper (typing-category-buffer)))
     (kill-buffer helper)
     )
@@ -183,6 +192,6 @@
 (global-set-key (kbd "C-x t t") 'typing-category)
 (global-set-key (kbd "C-x t d") 'delete-typing-category)
 
-					;(provide 'typing-modes)
+(provide 'typing-categories)
 
 ;;; typing-categories.el ends here
