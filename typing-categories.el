@@ -33,9 +33,11 @@
 (defvar typing-category nil "Tracks whether typing-category is enabled.")
 (defvar typing-category-num 0 "Tracks the current typing-category number.\nCan be a single digit number.")
 (defvar typing-category-deleting nil "Tracks whether we are deleting right now.")
+(defvar typing-category-default 0 "Holds the default typing category number.")
 (setq-default typing-category nil)
 (setq-default typing-category-num 0)
-(setq-default typing-categorydeleting nil)
+(setq-default typing-category-deleting nil)
+(setq-default typing-category-default 0)
 
 ;; helper functions
 
@@ -109,12 +111,13 @@
   "Enable typing-category.  When (NOCREATE) is non nil a new buffer is not generated as one exists in the file system."
   (setq-local typing-category t)
   (unless nocreate
-    (setq-local typing-category-num 0)
-    (let ((helper (typing-category-buffer))
+    (setq-local typing-category-num typing-category-default)
+    (let ((char (+ typing-category-num ?0))
+	  (helper (typing-category-buffer))
 	  (characters (- (point-max) (point-min))))
       (generate-new-buffer helper)
       (with-current-buffer (get-buffer helper)
-	(insert-char ?0 characters))
+	(insert-char char characters))
       )
     )
   (add-hook 'after-change-functions 'typing-categories-after-changes-fun t t)
@@ -124,13 +127,15 @@
 (defun disable-typing-category ()
   "Disable typing-category."
   (setq-local typing-category nil)
-  (let ((typing-category-file
-	 (concat
-	  (file-name-directory (buffer-file-name))
-	  (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
-	  )))
-    (when (file-exists-p typing-category-file)
-      (delete-file typing-category-file)
+  (when (buffer-file-name)
+    (let ((typing-category-file
+	   (concat
+	    (file-name-directory (buffer-file-name))
+	    (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
+	    )))
+      (when (file-exists-p typing-category-file)
+	(delete-file typing-category-file)
+	)
       )
     )
   (let ((helper (typing-category-buffer)))
@@ -158,26 +163,42 @@
 (defun delete-typing-category (CATEGORY)
   "Delete each character belonging to typing mode (CATEGORY)."
   (interactive "NEnter category to delete(0-9): ")
-  (setq CATEGORY (+ ?0 CATEGORY))
-  (setq-local typing-category-deleting t)
-  (save-excursion
-    (with-current-buffer (typing-category-buffer)
-      (goto-char (point-min))
-      (while (not (eq (point) (point-max)))
-	(if (eq (char-after) CATEGORY)
-	    (let ((point (point)))
-	      (delete-char 1)
-	      (with-current-buffer (inverse-typing-category-buffer)
-		(goto-char point)
+  (when typing-category
+    (setq CATEGORY (+ ?0 CATEGORY))
+    (setq-local typing-category-deleting t)
+    (save-excursion
+      (with-current-buffer (typing-category-buffer)
+	(goto-char (point-min))
+	(while (not (eq (point) (point-max)))
+	  (if (eq (char-after) CATEGORY)
+	      (let ((point (point)))
 		(delete-char 1)
+		(with-current-buffer (inverse-typing-category-buffer)
+		  (goto-char point)
+		  (delete-char 1)
+		  )
 		)
-	      )
-	  (forward-char)
+	    (forward-char)
+	    )
 	  )
 	)
       )
+    (setq-local typing-category-deleting nil)
     )
-  (setq-local typing-category-deleting nil)
+  (when (not typing-category) (message "Typing categories are not active."))
+  )
+
+(defun current-typing-category ()
+  "Report the current typing category."
+  (interactive)
+  (message "Current typing category: %d" typing-category-num)
+  )
+
+(defun reset-typing-category ()
+  "Reset the typing category to the default one."
+  (interactive)
+  (setq-local typing-category-num typing-category-default)
+  (current-typing-category)
   )
 
 ;; hooks
@@ -185,12 +206,6 @@
 (add-hook 'find-file-hook 'typing-category-after-find-file)
 (add-hook 'after-save-hook 'typing-category-after-save-file)
 (add-hook 'kill-buffer-hook 'typing-category-after-kill-buffer)
-
-;; key bindings !!!!!! temporary
-
-(global-set-key (kbd "C-x t m") 'change-typing-category)
-(global-set-key (kbd "C-x t t") 'typing-category)
-(global-set-key (kbd "C-x t d") 'delete-typing-category)
 
 (provide 'typing-categories)
 
