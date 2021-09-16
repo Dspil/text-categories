@@ -74,9 +74,9 @@
 	  (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
 	  )))
     (when
-      (file-exists-p
-       typing-category-file
-       )
+	(file-exists-p
+	 typing-category-file
+	 )
       (find-file-noselect typing-category-file)
       (enable-typing-category t)
       )
