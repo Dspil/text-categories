@@ -8,13 +8,18 @@ This package is available through MELPA.
 It can be set up using use-package:
 
 #+BEGIN_SRC emacs-lisp
-(use-package typing-categories
+	(use-package typing-categories
 		:bind (
-		 ("C-x t t" . typing-category) ;; toggle typing category mode
-		 ("C-x t c" . change-typing-category) ;; change typing category number (0-9)
-		 ("C-x t d" . delete-typing-category) ;; delete characters belonging to a typing category
-		 ("C-x t r" . reset-typing-category) ;; set the typing category to the default one
-		 ("C-x t p" . current-typing-category) ;; report the current typing category
+		 ;; toggle typing category mode
+		 ("C-x t t" . typing-category)
+		 ;; change typing category number (0-9)
+		 ("C-x t c" . change-typing-category)
+		 ;; delete characters belonging to a typing category
+		 ("C-x t d" . delete-typing-category)
+		 ;; set the typing category to the default one
+		 ("C-x t r" . reset-typing-category)
+		 ;; report the current typing category
+		 ("C-x t p" . current-typing-category) 
 		 )
 		)
 #+END_SRC
