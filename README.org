@@ -3,9 +3,37 @@ When debugging code, it is not unusual to insert print statements and other temp
 
 ** Installation
 
-This package is available through MELPA.
+This package is not yet available through MELPA.
 
-It can be set up using use-package:
+It can be installed by cloning the package:
+
+#+BEGIN_SRC bash
+	git clone https://github.com/Dspil/typing-categories.git
+#+END_SRC
+
+And then requiring it with:
+
+#+BEGIN_SRC emacs-lisp
+	(add-to-list 'load-path "<path_to_typing-categories_repo>")
+	(require 'typing-categories)
+#+END_SRC
+
+The keybindings can be set using:
+
+#+BEGIN_SRC emacs-lisp
+	;; toggle typing category mode
+	(global-set-key (kbd "C-x t t") 'typing-category)
+	;; change typing category number (0-9)
+	(global-set-key (kbd "C-x t c") 'change-typing-category)
+	;; delete characters belonging to a typing category
+	(global-set-key (kbd "C-x t d") 'delete-typing-category)
+	;; set the typing category to the default one
+	(global-set-key (kbd "C-x t r") 'reset-typing-category)
+	;; report the current typing category
+	(global-set-key (kbd "C-x t p") 'current-typing-category)
+#+END_SRC
+
+Or it can be set up using use-package (if you have already added its path to the 'load-path:
 
 #+BEGIN_SRC emacs-lisp
 	(use-package typing-categories
