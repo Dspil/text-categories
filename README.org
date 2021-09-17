@@ -3,7 +3,7 @@ When debugging code, it is not unusual to insert print statements and other temp
 
 ** Usage example
 
-A very general usage example can be seen in this gif:
+A very general usage example can be seen in this gif. Debug words represent the extra debugging code added to locate the bugs which we want to get rid of later. Since debug code is spread across all the program we cannot just revert the changes or use region undo with one move. But we wrote all debug code in typing category 1 so we can delete it with one hotkey.
 
 [[resources/example.gif]]
 
