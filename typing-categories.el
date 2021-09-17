@@ -34,6 +34,7 @@
 (defvar typing-category-num 0 "Tracks the current typing category number.\nCan be a single digit number.")
 (defvar typing-category-deleting nil "Tracks whether we are deleting right now.")
 (defvar typing-category-default 0 "Holds the default typing category number.")
+
 (setq-default typing-category nil)
 (setq-default typing-category-num 0)
 (setq-default typing-category-deleting nil)
@@ -43,13 +44,11 @@
 
 (defun typing-category-buffer ()
   "Get the helper typing categories buffer name."
-  (concat typing-category-buffer-prefix (buffer-name))
-  )
+  (concat typing-category-buffer-prefix (buffer-name)))
 
 (defun inverse-typing-category-buffer ()
   "Return the buffer name which corresonds to the current typing-categories buffer."
-  (substring-no-properties (format "%s" (current-buffer)) (length typing-category-buffer-prefix))
-  )
+  (substring-no-properties (format "%s" (current-buffer)) (length typing-category-buffer-prefix)))
 
 ;; logic
 
@@ -60,11 +59,7 @@
       (with-current-buffer (typing-category-buffer)
 	(goto-char beg)
 	(delete-char len)
-	(insert-char num (- end beg))
-	)
-      )
-    )
-  )
+	(insert-char num (- end beg))))))
 
 (defun typing-category-after-find-file ()
   "Check if the file opened has a corresponding typing-categories file and load it."
@@ -75,13 +70,9 @@
 	  )))
     (when
 	(file-exists-p
-	 typing-category-file
-	 )
+	 typing-category-file)
       (find-file-noselect typing-category-file)
-      (enable-typing-category t)
-      )
-    )
-  )
+      (enable-typing-category t))))
 
 (defun typing-category-after-save-file ()
   "Check if typing-categories is active when saving a file and save the typing-categories corresponding buffer."
@@ -89,21 +80,14 @@
     (let ((typing-category-file
 	   (concat
 	    (file-name-directory (buffer-file-name))
-	    (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
-	    )))
+	    (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name))))))
       (with-current-buffer (typing-category-buffer)
-	(write-file typing-category-file)
-	)
-      )
-    )
-  )
+	(write-file typing-category-file)))))
 
 (defun typing-category-after-kill-buffer ()
   "Check if typing-categories is active when killing a buffer to kill the typing-categories corresponding buffer."
   (when typing-category
-    (kill-buffer (typing-category-buffer))
-    )
-  )
+    (kill-buffer (typing-category-buffer))))
 
 ;; enable-disable
 
@@ -117,12 +101,9 @@
 	  (characters (- (point-max) (point-min))))
       (generate-new-buffer helper)
       (with-current-buffer (get-buffer helper)
-	(insert-char char characters))
-      )
-    )
+	(insert-char char characters))))
   (add-hook 'after-change-functions 'typing-categories-after-changes-fun t t)
-  (message "Typing categories enabled")
-  )
+  (message "Typing categories enabled"))
 
 (defun disable-typing-category ()
   "Disable typing-categories."
@@ -131,34 +112,26 @@
     (let ((typing-category-file
 	   (concat
 	    (file-name-directory (buffer-file-name))
-	    (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name)))
-	    )))
+	    (concat typing-category-buffer-prefix (file-name-nondirectory (buffer-file-name))))))
       (when (file-exists-p typing-category-file)
-	(delete-file typing-category-file)
-	)
-      )
-    )
+	(delete-file typing-category-file))))
   (let ((helper (typing-category-buffer)))
-    (kill-buffer helper)
-    )
+    (kill-buffer helper))
   (remove-hook 'after-change-functions 'typing-categories-after-changes-fun t)
-  (message "Typing categories disabled")
-  )
+  (message "Typing categories disabled"))
 
 ;; commands
 
 (defun typing-category ()
   "Toggle typing-categories."
   (interactive)
-  (if typing-category (disable-typing-category) (enable-typing-category))
-  )
+  (if typing-category (disable-typing-category) (enable-typing-category)))
 
 (defun change-typing-category (CATEGORY)
   "Change the typing category of the typing-categories package.\n(CATEGORY): the category to change to."
   (interactive "NEnter category (0-9): ")
   (unless typing-category (enable-typing-category))
-  (setq-local typing-category-num CATEGORY)
-  )
+  (setq-local typing-category-num CATEGORY))
 
 (defun delete-typing-category (CATEGORY)
   "Delete each character belonging to typing category (CATEGORY)."
@@ -175,31 +148,21 @@
 		(delete-char 1)
 		(with-current-buffer (inverse-typing-category-buffer)
 		  (goto-char point)
-		  (delete-char 1)
-		  )
-		)
-	    (forward-char)
-	    )
-	  )
-	)
-      )
-    (setq-local typing-category-deleting nil)
-    )
-  (when (not typing-category) (message "Typing categories are not active."))
-  )
+		  (delete-char 1)))
+	    (forward-char)))))
+    (setq-local typing-category-deleting nil))
+  (when (not typing-category) (message "Typing categories are not active.")))
 
 (defun current-typing-category ()
   "Report the current typing category."
   (interactive)
-  (message "Current typing category: %d" typing-category-num)
-  )
+  (message "Current typing category: %d" typing-category-num))
 
 (defun reset-typing-category ()
   "Reset the typing category to the default one."
   (interactive)
   (setq-local typing-category-num typing-category-default)
-  (current-typing-category)
-  )
+  (current-typing-category))
 
 ;; hooks
 
