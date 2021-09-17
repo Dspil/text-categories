@@ -39,7 +39,7 @@ The keybindings can be set using:
 	(global-set-key (kbd "C-x t p") 'current-typing-category)
 #+END_SRC
 
-Or it can be set up using use-package (if you have already added its path to the 'load-path:
+Or it can be set up using use-package (if you have already added its path to the 'load-path):
 
 #+BEGIN_SRC emacs-lisp
 	(use-package typing-categories
