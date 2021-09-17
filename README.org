@@ -1,6 +1,12 @@
 * Emacs typing-categories package
 When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a typing category for inserted text. All text inserted belongs to typing-category 0 by default (this can be change through altering the value of 'typing-category-default' variable). It is possible to instruct the package to change the typing-category to a single digit number (0-9). Everything inserted from that moment and after will belong to the new typing-category. Finally a category can be deleted leaving only the characters belonging to all the other active categories.
 
+** Usage example
+
+A very general usage example can be seen in this gif:
+
+[[resources/example.gif]]
+
 ** Installation
 
 This package is not yet available through MELPA.
