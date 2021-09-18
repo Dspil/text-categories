@@ -28,15 +28,15 @@ The keybindings can be set using:
 
 #+BEGIN_SRC emacs-lisp
 	;; toggle typing category mode
-	(global-set-key (kbd "C-x t t") 'typing-category)
+	(global-set-key (kbd "C-x t t") 'typing-categories)
 	;; change typing category number (0-9)
-	(global-set-key (kbd "C-x t c") 'change-typing-category)
+	(global-set-key (kbd "C-x t c") 'typing-categories-change)
 	;; delete characters belonging to a typing category
-	(global-set-key (kbd "C-x t d") 'delete-typing-category)
+	(global-set-key (kbd "C-x t d") 'typing-categories-delete)
 	;; set the typing category to the default one
-	(global-set-key (kbd "C-x t r") 'reset-typing-category)
+	(global-set-key (kbd "C-x t r") 'typing-category-reset)
 	;; report the current typing category
-	(global-set-key (kbd "C-x t p") 'current-typing-category)
+	(global-set-key (kbd "C-x t p") 'typing-categories-current)
 #+END_SRC
 
 Or it can be set up using use-package (if you have already added its path to the 'load-path):
@@ -45,15 +45,13 @@ Or it can be set up using use-package (if you have already added its path to the
 	(use-package typing-categories
 		:bind (
 		 ;; toggle typing category mode
-		 ("C-x t t" . typing-category)
+		 ("C-x t t" . typing-categories)
 		 ;; change typing category number (0-9)
-		 ("C-x t c" . change-typing-category)
+		 ("C-x t c" . typing-categories-change)
 		 ;; delete characters belonging to a typing category
-		 ("C-x t d" . delete-typing-category)
+		 ("C-x t d" . typing-categories-delete)
 		 ;; set the typing category to the default one
-		 ("C-x t r" . reset-typing-category)
+		 ("C-x t r" . typing-categories-reset)
 		 ;; report the current typing category
-		 ("C-x t p" . current-typing-category) 
-		 )
-		)
+		 ("C-x t p" . typing-categories-current)))
 #+END_SRC
