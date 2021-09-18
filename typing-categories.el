@@ -138,7 +138,7 @@
     (save-excursion
       (with-current-buffer (typing-categories-buffer)
 	(goto-char (point-min))
-	(while (not (eq (point) (point-max)))
+	(while (not (eobp))
 	  (if (eq (char-after) category)
 	      (let ((point (point)))
 		(delete-char 1)
