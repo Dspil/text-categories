@@ -34,7 +34,7 @@ The keybindings can be set using:
 	;; delete characters belonging to a typing category
 	(global-set-key (kbd "C-x t d") 'typing-categories-delete)
 	;; set the typing category to the default one
-	(global-set-key (kbd "C-x t r") 'typing-category-reset)
+	(global-set-key (kbd "C-x t r") 'typing-categories-reset)
 	;; report the current typing category
 	(global-set-key (kbd "C-x t p") 'typing-categories-current)
 #+END_SRC
