@@ -182,6 +182,7 @@
 	 (found (typing-categories-list))
 	 (cmap (typing-categories-color-map found)))
     (with-current-buffer (get-buffer-create (typing-categories-viz-buffer))
+      (setq-local buffer-read-only nil)
       (erase-buffer)
       (typing-categories-make-legend found)
       (insert-buffer-substring name)

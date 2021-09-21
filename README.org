@@ -37,6 +37,8 @@ The keybindings can be set using:
 	(global-set-key (kbd "C-x t r") 'typing-categories-reset)
 	;; report the current typing category
 	(global-set-key (kbd "C-x t p") 'typing-categories-current)
+	;; visualize categories in buffer
+	(global-set-key (kbd "C-x t v") 'typing-categories-visualize)
 #+END_SRC
 
 Or it can be set up using use-package (if you have already added its path to the 'load-path):
@@ -53,7 +55,9 @@ Or it can be set up using use-package (if you have already added its path to the
 		 ;; set the typing category to the default one
 		 ("C-x t r" . typing-categories-reset)
 		 ;; report the current typing category
-		 ("C-x t p" . typing-categories-current)))
+		 ("C-x t p" . typing-categories-current)
+		 ;; visualize categories in buffer
+		 ("C-x t v" . typing-categories-visualize)))
 #+END_SRC
 
 To enable typing-categories automatically whenever a file is loaded that has a corresponding typing-categories file call the function
