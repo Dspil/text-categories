@@ -41,7 +41,7 @@
 (defvar typing-categories-save t "If t, saving the buffer saves the typing categories of its characters.")
 (defvar typing-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization")
 
- ;; logic
+;; logic
 
 (defun typing-categories-viz-buffer ()
   "Return a visualization buffer name corresponding to the current buffer."
