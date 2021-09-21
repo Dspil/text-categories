@@ -43,7 +43,7 @@
 
 (defun typing-categories-filename ()
   "Return a filename corresponding to the current buffer."
-  (concat typing-categories-file-prefix (buffer-file-name)))
+  (concat typing-categories-file-prefix (buffer-name)))
 
 (defun typing-categories-dump (data filename)
   "Dump DATA in the file FILENAME."
