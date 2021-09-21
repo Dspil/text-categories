@@ -31,150 +31,162 @@
 
 ;; variables
 
-(defvar-local typing-categories-buffer-prefix "~typing_categories::" "The prefix of typing-categories buffers.")
 (defvar-local typing-categories nil "Tracks whether typing-categories is enabled.")
-(defvar-local typing-categories-num 0 "Tracks the current typing category number.\nCan be a single digit number.")
-(defvar-local typing-categories-deleting nil "Tracks whether we are deleting right now.")
-(defvar-local typing-categories-default 0 "Holds the default typing category number.")
+(defvar-local typing-categories-category nil "Tracks the current typing category number.\nCan be a single digit number.")
+(defvar-local typing-categories-suppress-changes nil "Tracks whether we are deleting right now.")
+(defvar-local typing-categories-default "0" "Holds the default typing category number.")
+(defvar-local typing-categories-file-prefix "~typing_categories::" "The prefix of typing categories files.")
 
-;; helper functions
-
-(defun typing-categories-buffer ()
-  "Get the helper typing categories buffer name."
-  (concat typing-categories-buffer-prefix (buffer-name)))
-
-(defun typing-categories-inverse-buffer ()
-  "Return the buffer name which corresonds to the current typing-categories buffer."
-  (substring-no-properties (format "%s" (current-buffer)) (length typing-categories-buffer-prefix)))
+(defvar typing-categories-save t "If t, saving the buffer saves the typing categories of its characters.")
 
 ;; logic
 
-(defun typing-categories-after-changes-fun (beg end len)
-  "Do the corresponding change to the typing categories buffer at position (BEG)-(END) with previous length of string (LEN).  This function is hooked to 'after-change-functions'."
-  (unless typing-categories-deleting
-    (let ((num (+ ?0 typing-categories-num)))
-      (with-current-buffer (typing-categories-buffer)
-	(goto-char beg)
-	(delete-char len)
-	(insert-char num (- end beg))))))
+(defun typing-categories-filename ()
+  "Return a filename corresponding to the current buffer."
+  (concat typing-categories-file-prefix (buffer-file-name)))
 
-(defun typing-categories-after-find-file ()
-  "Check if the file opened has a corresponding typing-categories file and load it."
-  (let ((typing-categories-file
-	 (concat
-	  (file-name-directory (buffer-file-name))
-	  (concat typing-categories-buffer-prefix (file-name-nondirectory (buffer-file-name))))))
-    (when
-	(file-exists-p
-	 typing-categories-file)
-      (find-file-noselect typing-categories-file)
-      (typing-categories-enable t))))
+(defun typing-categories-dump (data filename)
+  "Dump DATA in the file FILENAME."
+  (with-temp-file filename
+    (prin1 data (current-buffer))))
 
-(defun typing-categories-after-save-file ()
-  "Check if typing-categories is active when saving a file and save the typing-categories corresponding buffer."
-  (when typing-categories
-    (let ((typing-categories-file
-	   (concat
-	    (file-name-directory (buffer-file-name))
-	    (concat typing-categories-buffer-prefix (file-name-nondirectory (buffer-file-name))))))
-      (with-current-buffer (typing-categories-buffer)
-	(write-file typing-categories-file)))))
+(defun typing-categories-load (filename)
+  "Restore data from the file FILENAME."
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (cl-assert (eq (point) (point-min)))
+    (read (current-buffer))))
 
-(defun typing-categories-after-kill-buffer ()
-  "Check if typing-categories is active when killing a buffer to kill the typing-categories corresponding buffer."
-  (when typing-categories
-    (kill-buffer (typing-categories-buffer))))
+(defun typing-categories-list ()
+  "Return the distinct typing categories existing in the current buffer."
+  (let ((found '()))
+    (save-excursion
+      (goto-char (point-min))
+      (while (not (eobp))
+	(let ((property (get-text-property (point) 'typing-categories-category)))
+	  (unless (member property found)
+	    (setq found (cons property found))))
+	(forward-char)))
+    found))
+
+(defun typing-categories-load-categories ()
+  "Load categories from file if it exists."
+  (if (file-exists-p (typing-categories-filename))
+      (progn
+	(setq-local typing-categories-suppress-changes t)
+	(let* ((data (typing-categories-load (typing-categories-filename)))
+	       (foundmap (car data))
+	       (catstring (cdr data)))
+	  (save-excursion
+	    (goto-char (point-min))
+	    (while (not (eobp))
+	      (put-text-property (point) (1+ (point)) 'typing-categories-category (car (rassoc (string-to-char (substring catstring (1- (point)) (point))) foundmap)))
+	      (forward-char))))
+	(setq-local typing-categories-suppress-changes nil))
+    (put-text-property (point-min) (point-max) 'typing-categories-category typing-categories-default)))
 
 ;; enable-disable
 
-(defun typing-categories-enable (&optional nocreate)
-  "Enable typing-categories.  When (NOCREATE) is non nil a new buffer is not generated as one exists in the file system."
+(defun typing-categories-enable ()
+  "Enable typing categories."
   (setq-local typing-categories t)
-  (unless nocreate
-    (setq-local typing-categories-num typing-categories-default)
-    (let ((char (+ typing-categories-num ?0))
-	  (helper (typing-categories-buffer))
-	  (characters (- (point-max) (point-min))))
-      (generate-new-buffer helper)
-      (with-current-buffer (get-buffer helper)
-	(insert-char char characters))))
+  (setq-local typing-categories-category typing-categories-default)
+  (if typing-categories-save
+      (typing-categories-load-categories)
+    (put-text-property (point-min) (point-max) 'typing-categories-category typing-categories-default))
   (typing-categories-enable-hooks)
   (message "Typing categories enabled"))
 
 (defun typing-categories-disable ()
-  "Disable typing-categories."
+  "Disable typing categories."
   (setq-local typing-categories nil)
+  (typing-categories-disable-hooks)
   (when (buffer-file-name)
     (let ((typing-categories-file
 	   (concat
 	    (file-name-directory (buffer-file-name))
-	    (concat typing-categories-buffer-prefix (file-name-nondirectory (buffer-file-name))))))
+	    (concat typing-categories-file-prefix (file-name-nondirectory (buffer-file-name))))))
       (when (file-exists-p typing-categories-file)
 	(delete-file typing-categories-file))))
-  (let ((helper (typing-categories-buffer)))
-    (kill-buffer helper))
-  (typing-categories-disable-hooks)
   (message "Typing categories disabled"))
 
 ;; commands
 
 (defun typing-categories ()
-  "Toggle typing-categories."
+  "Toggle typing categories."
   (interactive)
   (if typing-categories (typing-categories-disable) (typing-categories-enable)))
 
 (defun typing-categories-change (category)
-  "Change the typing category of the typing-categories package.\n(CATEGORY): the category to change to."
-  (interactive "NEnter category (0-9): ")
+  "Change the typing category.\n CATEGORY: the category to change to."
+  (interactive "sEnter category: ")
   (unless typing-categories (typing-categories-enable))
-  (setq-local typing-categories-num category))
+  (setq-local typing-categories-category category))
 
 (defun typing-categories-delete (category)
-  "Delete each character belonging to typing category (CATEGORY)."
-  (interactive "NEnter category to delete(0-9): ")
+  "Delete each character belonging to typing category CATEGORY."
+  (interactive "sEnter category to delete: ")
   (when typing-categories
-    (setq category (+ ?0 category))
-    (setq-local typing-categories-deleting t)
-    (save-excursion
-      (with-current-buffer (typing-categories-buffer)
-	(goto-char (point-min))
-	(while (not (eobp))
-	  (if (eq (char-after) category)
-	      (let ((point (point)))
-		(delete-char 1)
-		(with-current-buffer (typing-categories-inverse-buffer)
-		  (goto-char point)
-		  (delete-char 1)))
-	    (forward-char)))))
-    (setq-local typing-categories-deleting nil))
+    (setq-local typing-categories-suppress-changes t)
+    (goto-char (point-min))
+    (while (not (eobp))
+      (if (equal (get-text-property (point) 'typing-categories-category) category)
+	  (delete-char 1)
+	(forward-char)))
+    (setq-local typing-categories-suppress-changes nil))
   (when (not typing-categories) (message "Typing categories are not active.")))
 
-(defun typing-categories-current ()
-  "Report the current typing category."
+(defun typing-categories-report ()
+  "Report the current typing category and all the categories that exist in the buffer."
   (interactive)
-  (message "Current typing category: %d" typing-categories-num))
+  (message "Current typing category: %s\nCategories in buffer: %s" typing-categories-category (typing-categories-list)))
 
 (defun typing-categories-reset ()
   "Reset the typing category to the default one."
   (interactive)
-  (setq-local typing-categories-num typing-categories-default)
+  (setq-local typing-categories-category typing-categories-default)
   (typing-categories-current))
 
+(defun typing-categories-enable-on-find-file ()
+  "If ENABLE is t, when loading a file that has a corresponding typing categories file, it will enable the typing categories and load them from the file."
+  (interactive)
+  (add-hook 'find-file-hook 'typing-categories-after-load-fun))
+
 ;; hooks
+
+(defun typing-categories-after-load-fun ()
+  "After opening a file, if a categories file exist, enable typing categories."
+  (when (file-exists-p (typing-categories-filename))
+    (typing-categories-enable)))
+
+(defun typing-categories-after-changes-fun (beg end _)
+  "Do the corresponding change to the typing categories buffer at position (BEG)-(END) with previous length of string (LEN).  This function is hooked to 'after-change-functions'."
+  (unless typing-categories-suppress-changes
+    (put-text-property beg end 'typing-categories-category typing-categories-category)))
+
+(defun typing-categories-after-save-fun ()
+  "Save the typing categories of characters of the saved buffer in a file for later use."
+  (when (and typing-categories (> (point-max) 1))
+    (let* ((found (typing-categories-list))
+	   (foundmap (mapcar* #'cons found (number-sequence 1 (length found))))
+	   (catstring ""))
+      (save-excursion
+	(goto-char (point-min))
+	(while (not (eobp))
+	  (setq catstring (concat catstring (string (cdr (assoc (get-text-property (point) 'typing-categories-category) foundmap)))))
+	  (forward-char)))
+      (typing-categories-dump (cons foundmap catstring) (typing-categories-filename)))))
 
 (defun typing-categories-enable-hooks ()
   "Add typing categories hooks."
   (add-hook 'after-change-functions 'typing-categories-after-changes-fun t t)
-  (add-hook 'find-file-hook 'typing-categories-after-find-file)
-  (add-hook 'after-save-hook 'typing-categories-after-save-file)
-  (add-hook 'kill-buffer-hook 'typing-categories-after-kill-buffer))
+  (when typing-categories-save
+    (add-hook 'after-save-hook 'typing-categories-after-save-fun)))
 
 (defun typing-categories-disable-hooks ()
   "Remove all typing categories hooks."
   (remove-hook 'after-change-functions 'typing-categories-after-changes-fun t)
-  (remove-hook 'find-file-hook 'typing-categories-after-find-file)
-  (remove-hook 'after-save-hook 'typing-categories-after-save-file)
-  (remove-hook 'kill-buffer-hook 'typing-categories-after-kill-buffer))
+  (remove-hook 'after-save-hook 'typing-categories-after-save-fun))
 
 (provide 'typing-categories)
 
