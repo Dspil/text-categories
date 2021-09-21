@@ -145,7 +145,7 @@
   "Reset the typing category to the default one."
   (interactive)
   (setq-local typing-categories-category typing-categories-default)
-  (typing-categories-current))
+  (typing-categories-report))
 
 (defun typing-categories-enable-on-find-file ()
   "If ENABLE is t, when loading a file that has a corresponding typing categories file, it will enable the typing categories and load them from the file."
