@@ -177,6 +177,7 @@
 
 (defun typing-categories-visualize ()
   "Show the typing categories of characters in a separate buffer."
+  (interactive)
   (let* ((name (buffer-name))
 	 (found (typing-categories-list))
 	 (cmap (typing-categories-color-map found)))
