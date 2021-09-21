@@ -39,7 +39,7 @@
 (defvar-local typing-categories-viz-prefix "~typing_categories_viz::" "The prefix of typing categories vizualization buffer.")
 
 (defvar typing-categories-save t "If t, saving the buffer saves the typing categories of its characters.")
-(defvar typing-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization")
+(defvar typing-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization.")
 
 ;; logic
 
