@@ -36,10 +36,16 @@
 (defvar-local typing-categories-suppress-changes nil "Tracks whether we are deleting right now.")
 (defvar-local typing-categories-default "0" "Holds the default typing category number.")
 (defvar-local typing-categories-file-prefix "~typing_categories::" "The prefix of typing categories files.")
+(defvar-local typing-categories-viz-prefix "~typing_categories_viz::" "The prefix of typing categories vizualization buffer.")
 
 (defvar typing-categories-save t "If t, saving the buffer saves the typing categories of its characters.")
+(defvar typing-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization")
 
-;; logic
+ ;; logic
+
+(defun typing-categories-viz-buffer ()
+  "Return a visualization buffer name corresponding to the current buffer."
+  (concat typing-categories-viz-prefix (buffer-name)))
 
 (defun typing-categories-filename ()
   "Return a filename corresponding to the current buffer."
@@ -84,6 +90,28 @@
 	      (forward-char))))
 	(setq-local typing-categories-suppress-changes nil))
     (put-text-property (point-min) (point-max) 'typing-categories-category typing-categories-default)))
+
+(defun typing-categories-color-map-helper (found colors acc)
+  "Helper function for making the color map using FOUND categories COLORS as the available colors and ACC for tail recursion."
+  (if (equal (length found) 0)
+      acc
+    (when (equal (length colors) 0)
+      (setq colors typing-categories-colorwheel))
+    (typing-categories-color-map-helper (cdr found) (cdr colors) (cons (cons (car found) (car colors)) acc))))
+
+(defun typing-categories-color-map (found)
+  "Make an association list of FOUND categories with cycling the colorwheel."
+  (typing-categories-color-map-helper found '() '()))
+
+(defun typing-categories-make-legend (found)
+  "Print the description of the visualization buffer for FOUND categories."
+  (let ((str "Helper Buffer for inspecting typing categories.\nCategories are:\n")
+	(nostart nil))
+    (while (> (length found) 0)
+      (setq str (concat str (and nostart " | ") (propertize (car found) 'typing-categories-category (car found))))
+      (setq nostart t)
+      (setq found (cdr found)))
+    (insert (concat str "\nBuffer contents:\n\n"))))
 
 ;; enable-disable
 
@@ -146,6 +174,25 @@
   (interactive)
   (setq-local typing-categories-category typing-categories-default)
   (typing-categories-report))
+
+(defun typing-categories-visualize ()
+  "Show the typing categories of characters in a separate buffer."
+  (let* ((name (buffer-name))
+	 (found (typing-categories-list))
+	 (cmap (typing-categories-color-map found)))
+    (with-current-buffer (get-buffer-create (typing-categories-viz-buffer))
+      (erase-buffer)
+      (typing-categories-make-legend found)
+      (insert-buffer-substring name)
+      (goto-char (point-min))
+      (while (not (eobp))
+	(let* ((cat (get-text-property (point) 'typing-categories-category))
+	       (color (cdr (assoc cat cmap))))
+	  (put-text-property (point) (1+ (point)) 'face (list :foreground color)))
+	(forward-char))
+      (goto-char (point-min))
+      (setq-local buffer-read-only t))
+    (pop-to-buffer (typing-categories-viz-buffer))))
 
 (defun typing-categories-enable-on-find-file ()
   "If ENABLE is t, when loading a file that has a corresponding typing categories file, it will enable the typing categories and load them from the file."
