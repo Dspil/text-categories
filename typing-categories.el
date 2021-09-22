@@ -156,12 +156,17 @@
   (interactive "sEnter category to delete: ")
   (when typing-categories
     (setq-local typing-categories-suppress-changes t)
-    (goto-char (point-min))
-    (while (not (eobp))
-      (if (equal (get-text-property (point) 'typing-categories-category) category)
-	  (delete-char 1)
-	(forward-char)))
-    (setq-local typing-categories-suppress-changes nil))
+    (let ((prevpoint (point)))
+      (goto-char (point-min))
+      (while (not (eobp))
+	(if (equal (get-text-property (point) 'typing-categories-category) category)
+	    (progn
+	      (delete-char 1)
+	      (when (<= (point) prevpoint)
+		(setq prevpoint (1- prevpoint))))
+	  (forward-char)))
+      (goto-char prevpoint)
+      (setq-local typing-categories-suppress-changes nil)))
   (when (not typing-categories) (message "Typing categories are not active.")))
 
 (defun typing-categories-report ()
