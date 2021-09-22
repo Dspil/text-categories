@@ -92,7 +92,7 @@
     (put-text-property (point-min) (point-max) 'typing-categories-category typing-categories-default)))
 
 (defun typing-categories-color-map-helper (found colors acc)
-  "Helper function for making the color map using FOUND categories COLORS as the available colors and ACC for tail recursion."
+  "Helper function for making the color map using FOUND categories COLORS as the available colors and ACC for aggregating it."
   (if (equal (length found) 0)
       acc
     (when (equal (length colors) 0)
