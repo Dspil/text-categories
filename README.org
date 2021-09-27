@@ -1,9 +1,9 @@
-* Emacs typing-categories package
-When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a typing category for inserted text. All text inserted belongs to typing-category "0" by default (this can be change through altering the value of 'typing-category-default' variable). It is possible to instruct the package to change the typing-category to any string. Everything inserted from that moment and after will belong to the new typing-category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the typing categories of characters in the buffer. When enabling typing categories in a buffer that has such a file in that directory, it loads the typing categories of characters from the file in stead of setting them to the default one.
+* Emacs text-categories package
+When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default (this can be change through altering the value of 'text-categories-default' variable). It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories of characters from the file in stead of setting them to the default one.
 
 ** Usage example
 
-A very general usage example can be seen in this gif. Debug words represent the extra debugging code added to locate the bugs which we want to get rid of later. Since debug code is spread across all the program we cannot just revert the changes or use region undo with one move. But we wrote all debug code in typing category 1 so we can delete it with one hotkey.
+A very general usage example can be seen in this gif. Debug words represent the extra debugging code added to locate the bugs which we want to get rid of later. Since debug code is spread across all the program we cannot just revert the changes or use region undo with one move. But we wrote all debug code in text category 1 so we can delete it with one hotkey.
 
 [[resources/example.gif]]
 
@@ -14,62 +14,62 @@ This package is not yet available through MELPA.
 It can be installed by cloning the package:
 
 #+BEGIN_SRC bash
-	git clone https://github.com/Dspil/typing-categories.git
+	git clone https://github.com/Dspil/text-categories.git
 #+END_SRC
 
 And then requiring it with:
 
 #+BEGIN_SRC emacs-lisp
-	(add-to-list 'load-path "<path_to_typing-categories_repo>")
-	(require 'typing-categories)
+	(add-to-list 'load-path "<path_to_text-categories_repo>")
+	(require 'text-categories)
 #+END_SRC
 
 The keybindings can be set using:
 
 #+BEGIN_SRC emacs-lisp
-	;; toggle typing category mode
-	(global-set-key (kbd "C-x t t") 'typing-categories)
-	;; change typing category number (0-9)
-	(global-set-key (kbd "C-x t c") 'typing-categories-change)
-	;; delete characters belonging to a typing category
-	(global-set-key (kbd "C-x t d") 'typing-categories-delete)
-	;; set the typing category to the default one
-	(global-set-key (kbd "C-x t r") 'typing-categories-reset)
-	;; report the current typing category
-	(global-set-key (kbd "C-x t p") 'typing-categories-current)
+	;; toggle text category mode
+	(global-set-key (kbd "C-x t t") 'text-categories)
+	;; change text category number (0-9)
+	(global-set-key (kbd "C-x t c") 'text-categories-change)
+	;; delete characters belonging to a text category
+	(global-set-key (kbd "C-x t d") 'text-categories-delete)
+	;; set the text category to the default one
+	(global-set-key (kbd "C-x t r") 'text-categories-reset)
+	;; report the current text category
+	(global-set-key (kbd "C-x t p") 'text-categories-current)
 	;; visualize categories in buffer
-	(global-set-key (kbd "C-x t v") 'typing-categories-visualize)
+	(global-set-key (kbd "C-x t v") 'text-categories-visualize)
 #+END_SRC
 
 Or it can be set up using use-package (if you have already added its path to the 'load-path):
 
 #+BEGIN_SRC emacs-lisp
-	(use-package typing-categories
+	(use-package text-categories
 		:bind (
-		 ;; toggle typing category mode
-		 ("C-x t t" . typing-categories)
-		 ;; change typing category number (0-9)
-		 ("C-x t c" . typing-categories-change)
-		 ;; delete characters belonging to a typing category
-		 ("C-x t d" . typing-categories-delete)
-		 ;; set the typing category to the default one
-		 ("C-x t r" . typing-categories-reset)
-		 ;; report the current typing category
-		 ("C-x t p" . typing-categories-current)
+		 ;; toggle text category mode
+		 ("C-x t t" . text-categories)
+		 ;; change text category number (0-9)
+		 ("C-x t c" . text-categories-change)
+		 ;; delete characters belonging to a text category
+		 ("C-x t d" . text-categories-delete)
+		 ;; set the text category to the default one
+		 ("C-x t r" . text-categories-reset)
+		 ;; report the current text category
+		 ("C-x t p" . text-categories-current)
 		 ;; visualize categories in buffer
-		 ("C-x t v" . typing-categories-visualize)))
+		 ("C-x t v" . text-categories-visualize)))
 #+END_SRC
 
-To enable typing-categories automatically whenever a file is loaded that has a corresponding typing-categories file call the function
+To enable text-categories automatically whenever a file is loaded that has a corresponding text-categories file call the function
 
 #+BEGIN_SRC emacs-lisp
-(typing-categories-enable-on-find-file)
+(text-categories-enable-on-find-file)
 #+END_SRC
 
 after the package is loaded.
 
-If you don't want typing-categories to save create the helper files for persistence, it can be disabled with:
+If you don't want text-categories to save create the helper files for persistence, it can be disabled with:
 
 #+BEGIN_SRC emacs-lisp
-	(setq typing-categories-save nil)
+	(setq text-categories-save nil)
 #+END_SRC
