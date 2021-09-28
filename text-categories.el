@@ -200,25 +200,27 @@
 (defun text-categories-visualize ()
   "Show the text categories of characters in a separate buffer."
   (interactive)
-  (when text-categories
-    (let* ((name (buffer-name))
-	   (found (text-categories-list))
-	   (cmap (text-categories-color-map found)))
-      (with-current-buffer (get-buffer-create (text-categories-viz-buffer))
-	(setq-local buffer-read-only nil)
-	(erase-buffer)
-	(text-categories-make-legend found)
-	(insert-buffer-substring name)
-	(goto-char (point-min))
-	(while (not (eobp))
-	  (let* ((cat (get-text-property (point) 'text-categories-category))
-		 (color (cdr (assoc cat cmap))))
-	    (put-text-property (point) (1+ (point)) 'face (list :foreground color)))
-	  (forward-char))
-	(goto-char (point-min))
-	(setq-local buffer-read-only t))
-      (pop-to-buffer (text-categories-viz-buffer))))
-  (when (not text-categories) (message "Text categories are not active.")))
+  (if text-categories
+      (progn
+	(let* ((name (buffer-name))
+	       (found (text-categories-list))
+	       (cmap (text-categories-color-map found)))
+	  (with-current-buffer (get-buffer-create (text-categories-viz-buffer))
+	    (setq-local buffer-read-only nil)
+	    (erase-buffer)
+	    (text-categories-make-legend found)
+	    (insert-buffer-substring name)
+	    (goto-char (point-min))
+	    (while (not (eobp))
+	      (let* ((cat (get-text-property (point) 'text-categories-category))
+		     (color (cdr (assoc cat cmap))))
+		(put-text-property (point) (1+ (point)) 'face (list :foreground color)))
+	      (forward-char))
+	    (goto-char (point-min))
+	    (put-text-property (point-min) (point-max) 'invisible nil)
+	    (setq-local buffer-read-only t))
+	  (pop-to-buffer (text-categories-viz-buffer))))
+    (message "Text categories are not active.")))
 
 (defun text-categories-change-region-category (start end)
   "Print number of lines and characters in the active region START - END."
@@ -229,6 +231,19 @@
       (put-text-property start end 'text-categories-category cat)
       (setq text-categories-suppress-changes nil)))
   (when (not mark-active) (message "Mark is inactive.")))
+
+(defun text-categories-toggle-hidden (category)
+  "Toggle the visibility of characters belonging to CATEGORY."
+  (interactive "sEnter category: ")
+  (when text-categories
+    (save-excursion
+      (goto-char (point-min))
+      (while (not (eobp))
+	(when (equal (get-text-property (point) 'text-categories-category) category)
+	  (put-text-property (point) (1+ (point)) 'invisible (not (get-text-property (point) 'invisible))))
+	(forward-char))))
+  (when (not text-categories)
+    (message "Text categories are not active.")))
 
 (defun text-categories-enable-on-find-file ()
   "If ENABLE is t, when loading a file that has a corresponding text categories file, it will enable the text categories and load them from the file."

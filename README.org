@@ -41,6 +41,8 @@ The keybindings can be set using:
 	(global-set-key (kbd "C-x t v") 'text-categories-visualize)
 	;; change the category of the marked region
 	(global-set-key (kbd "C-x t u") 'text-categories-change-region-category)
+	;; toggle the visibility of a certain category
+	(global-set-key (kbd "C-x t h") 'text-categories-toggle-hidden)
 #+END_SRC
 
 Or it can be set up using use-package (if you have already added its path to the 'load-path):
@@ -61,7 +63,9 @@ Or it can be set up using use-package (if you have already added its path to the
 		 ;; visualize categories in buffer
 		 ("C-x t v" . text-categories-visualize)
 		 ;; change the category of the marked region
-		 ("C-x t u" . text-categories-change-region-category)))
+		 ("C-x t u" . text-categories-change-region-category)
+		 ;; toggle the visibility of a certain category
+		 ("C-x t h" . text-categories-toggle-hidden)))
 #+END_SRC
 
 To enable text-categories automatically whenever a file is loaded that has a corresponding text-categories file call the function
