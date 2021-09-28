@@ -236,12 +236,14 @@
   "Toggle the visibility of characters belonging to CATEGORY."
   (interactive "sEnter category: ")
   (when text-categories
+    (setq text-categories-suppress-changes t)
     (save-excursion
       (goto-char (point-min))
       (while (not (eobp))
 	(when (equal (get-text-property (point) 'text-categories-category) category)
 	  (put-text-property (point) (1+ (point)) 'invisible (not (get-text-property (point) 'invisible))))
-	(forward-char))))
+	(forward-char)))
+    (setq text-categories-suppress-changes nil))
   (when (not text-categories)
     (message "Text categories are not active.")))
 
