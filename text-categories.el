@@ -150,6 +150,11 @@
 
 ;; commands
 
+(defun text-categories-get (category)
+  "Get a CATEGORY from the user."
+  (interactive "sEnter category: ")
+  category)
+
 (defun text-categories ()
   "Toggle text categories."
   (interactive)
@@ -214,6 +219,16 @@
 	(setq-local buffer-read-only t))
       (pop-to-buffer (text-categories-viz-buffer))))
   (when (not text-categories) (message "Text categories are not active.")))
+
+(defun text-categories-change-region-category (start end)
+  "Print number of lines and characters in the active region START - END."
+  (interactive "r")
+  (when mark-active
+    (let ((cat (call-interactively 'text-categories-get)))
+      (setq text-categories-suppress-changes t)
+      (put-text-property start end 'text-categories-category cat)
+      (setq text-categories-suppress-changes nil)))
+  (when (not mark-active) (message "Mark is inactive.")))
 
 (defun text-categories-enable-on-find-file ()
   "If ENABLE is t, when loading a file that has a corresponding text categories file, it will enable the text categories and load them from the file."
