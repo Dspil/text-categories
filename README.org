@@ -71,7 +71,7 @@ Or it can be set up using use-package (if you have already added its path to the
 To enable text-categories automatically whenever a file is loaded that has a corresponding text-categories file call the function
 
 #+BEGIN_SRC emacs-lisp
-(text-categories-enable-on-find-file)
+	(text-categories-enable-on-find-file)
 #+END_SRC
 
 after the package is loaded.
