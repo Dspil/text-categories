@@ -6,7 +6,7 @@
 ;; Keywords: lisp
 ;; Version: 0.0.1
 ;; URL: https://github.com/Dspil/text-categories
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "26.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@
 (defvar-local text-categories-default "0" "Holds the default text category number.")
 (defvar-local text-categories-file-prefix "~text_categories::" "The prefix of text categories files.")
 (defvar-local text-categories-viz-prefix "~text_categories_viz::" "The prefix of text categories vizualization buffer.")
+(defvar-local text-categories-stored '() "Assoc list holding all the stored categories.")
 
 (defvar text-categories-save t "If t, saving the buffer saves the text categories of its characters.")
 (defvar text-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization.")
@@ -128,6 +129,7 @@
   "Enable text categories."
   (setq-local text-categories t)
   (setq-local text-categories-category text-categories-default)
+  (setq-local text-categories-stored '())
   (if text-categories-save
       (text-categories-load-categories)
     (put-text-property (point-min) (point-max) 'text-categories-category text-categories-default))
@@ -164,7 +166,9 @@
   "Change the text category.\n CATEGORY: the category to change to."
   (interactive "sEnter category: ")
   (unless text-categories (text-categories-enable))
-  (setq-local text-categories-category category))
+  (if (assoc category text-categories-stored)
+      (message "Can't change to a stored category.")
+    (setq-local text-categories-category category)))
 
 (defun text-categories-delete (category)
   "Delete each character belonging to text category CATEGORY."
@@ -252,6 +256,81 @@
   (interactive)
   (add-hook 'find-file-hook 'text-categories-after-load-fun))
 
+(defun text-categories-store-category (category)
+  "Store the characters belonging to CATEGORY for later restore."
+  (interactive "sEnter category: ")
+  (when text-categories
+    (if (assoc category text-categories-stored)
+	(message "Can't store an already stored category.")
+      (let ((regions '()))
+	(save-excursion
+	  (goto-char (point-min))
+	  (when (equal (get-text-property (point) 'text-categories-category) category)
+	    (setq regions (cons '(1) regions))
+	    (when (not (equal (get-text-property (1+ (point)) 'text-categories-category) category))
+	      (setq regions (cons (list (substring-no-properties (buffer-string) 0 1) 1 1) '()))
+	      (delete-char 1)))
+	  (forward-char)
+	  (while (not (equal (point) (1- (point-max))))
+	    (let ((prev (get-text-property (1- (point)) 'text-categories-category))
+		  (cur (get-text-property (point) 'text-categories-category))
+		  (next (get-text-property (1+ (point)) 'text-categories-category)))
+	      (when (and (not (equal prev category)) (equal cur category))
+		(setq regions (cons (list (point)) regions)))
+	      (when (and (not (equal next category)) (equal cur category))
+		(setq regions (cons (cons (substring-no-properties (buffer-string) (1- (car (car regions))) (point)) (cons (point) (car regions))) (cdr regions)))
+		(save-excursion
+		  (let ((catend (car (cdr (car regions))))
+			(catstart (car (cdr (cdr (car regions))))))
+		    (goto-char catstart)
+		    (delete-char (1+ (- catend catstart))))))
+	      (forward-char)))
+	  (when (integerp (car (car regions)))
+	    (setq regions (cons (cons (substring-no-properties (buffer-string) (1- (car (car regions))) (point)) (cons (point) (car regions))) (cdr regions)))
+	    (save-excursion
+	      (let ((catend (car (cdr (car regions))))
+		    (catstart (car (cdr (cdr (car regions))))))
+		(goto-char catstart)
+		(delete-char (1+ (- catend catstart))))))
+	  (when (and (equal (get-text-property (1- (point-max)) 'text-categories-category) category)
+		     (not (equal (get-text-property (- (point-max) 2) 'text-categories-category) category)))
+	    (setq regions (cons (list (substring-no-properties (buffer-string) (- (point-max) 2) (1- (point-max))) (1- (point-max)) (1- (point-max))) regions))
+	    (save-excursion
+	      (goto-char (point-max))
+	      (delete-char -1))))
+	(when regions
+	  (when (equal text-categories-category category)
+	    (setq text-categories-category text-categories-default))
+	  (setq-local text-categories-stored (cons (cons category regions) text-categories-stored)))))))
+
+(defun text-categories-restore-category (category)
+  "Restore the characters belonging to CATEGORY."
+  (interactive "sEnter category: ")
+  (when text-categories
+    (let ((stored (assoc category text-categories-stored)))
+      (if (not stored)
+	  (message "No such category stored.")
+	(setq text-categories-suppress-changes t)
+	(let ((regions (cdr stored)))
+	  (while regions
+	    (let ((cattext (car (car regions)))
+		  (catend (car (cdr (car regions))))
+		  (catstart (car (cdr (cdr (car regions))))))
+	      (goto-char catstart)
+	      (insert cattext)
+	      (put-text-property catstart (1+ catend) 'text-categories-category category)
+	      (setq regions (cdr regions)))))
+	(setq-local text-categories-stored (assoc-delete-all category text-categories-stored))
+	(setq text-categories-suppress-changes nil)))))
+
+(defun text-categories-store-restore (category)
+  "If CATEGORY is not stored, store it, else restore it."
+  (interactive "sEnter category: ")
+  (when text-categories
+    (if (assoc category text-categories-stored)
+	(text-categories-restore-category category)
+      (text-categories-store-category category))))
+
 ;; hooks
 
 (defun text-categories-after-load-fun ()
@@ -259,10 +338,26 @@
   (when (file-exists-p (text-categories-filename))
     (text-categories-enable)))
 
-(defun text-categories-after-changes-fun (beg end _)
-  "Do the corresponding change to the text categories buffer at position (BEG)-(END) with previous length of string (LEN).  This function is hooked to 'after-change-functions'."
+(defun text-categories-after-changes-fun (beg end len)
+  "Do the corresponding change to the text categories buffer at position BEG - END with previous length of string LEN.  This function is hooked to 'after-change-functions'."
   (unless text-categories-suppress-changes
-    (put-text-property beg end 'text-categories-category text-categories-category)))
+    (put-text-property beg end 'text-categories-category text-categories-category))
+  (setq-local text-categories-stored
+	      (cl-map 'list
+		   (lambda (cat)
+		     (cons (car cat)
+			   (cl-map 'list
+				(lambda (region)
+				  (let ((cattext (car region))
+					(catend (car (cdr region)))
+					(catstart (car (cdr (cdr region)))))
+				    (if (> catstart beg)
+					(list cattext
+					      (+ catend (- (- end beg) len))
+					      (+ catstart (- (- end beg) len)))
+				      (list cattext catend catstart))))
+				(cdr cat))))
+		   text-categories-stored)))
 
 (defun text-categories-after-save-fun ()
   "Save the text categories of characters of the saved buffer in a file for later use."
