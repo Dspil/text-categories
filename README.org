@@ -1,5 +1,5 @@
 * Emacs text-categories package
-When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default (this can be change through altering the value of 'text-categories-default' variable). It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories of characters from the file in stead of setting them to the default one.
+When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default. It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories of characters from the file in stead of setting them to the default one.
 
 ** Usage example
 
@@ -8,7 +8,17 @@ A very general usage example can be seen in this gif. Debug words represent the 
 [[resources/example.gif]]
 
 ** Package reference:
-- Inline code ~echo~
+Below there is a listing of the commands provided by this package and their purpose.
+
+- ~text-categories~: Toggles text categories (enabled-disabled) in the current buffer.
+- ~text-categories-change~: Changes the active category to a new one with any string as a name.
+- ~text-categories-delete~: Deletes every character belonging to a category given by the user.
+- ~text-categories-reset~: Sets the category to be the default one. The package holds the default category in the variable ~text-categories-default~ and its default value is "0". The user can change the value of this variable to have a different default category.
+- ~text-categories-report~: Prints the current active category and all the categories existing in the current buffer.
+- ~text-categories-visualize~: Shows the contents of the current buffer in a new buffer with each character highlighted according to its category.
+- ~text-categories-change-region-category~: Changes the category of each character in the selected region to the one the user inputs.
+- ~text-categories-toggle-hidden~: Toggles the visibility of characters belonging to a certain category.
+- ~text-categories-store-restore~: Asks for a category from the user. If characters of that category exist in the current buffer, it deletes them but stores their positions in memory. The user cannot change the category to be one that is stored from then on. If this function is called and the category given by the user is already stored, it restores it inserting all the caracters belonging to it to their original position. Note that this position will be altered according to the insertions and deletions the user makes while a category is stored. After a category is restored, the user can select it again as normal.
 
 ** Installation
 
@@ -39,13 +49,15 @@ The keybindings can be set using:
 	;; set the text category to the default one
 	(global-set-key (kbd "C-x t r") 'text-categories-reset)
 	;; report the current text category
-	(global-set-key (kbd "C-x t p") 'text-categories-current)
+	(global-set-key (kbd "C-x t p") 'text-categories-report)
 	;; visualize categories in buffer
 	(global-set-key (kbd "C-x t v") 'text-categories-visualize)
 	;; change the category of the marked region
 	(global-set-key (kbd "C-x t u") 'text-categories-change-region-category)
 	;; toggle the visibility of a certain category
 	(global-set-key (kbd "C-x t h") 'text-categories-toggle-hidden)
+	;; store or restore a certain category
+	(global-set-key (kbd "C-x t s") 'text-categories-store-restore)
 #+END_SRC
 
 Or it can be set up using use-package (if you have already added its path to the 'load-path):
@@ -62,13 +74,15 @@ Or it can be set up using use-package (if you have already added its path to the
 		 ;; set the text category to the default one
 		 ("C-x t r" . text-categories-reset)
 		 ;; report the current text category
-		 ("C-x t p" . text-categories-current)
+		 ("C-x t p" . text-categories-report)
 		 ;; visualize categories in buffer
 		 ("C-x t v" . text-categories-visualize)
 		 ;; change the category of the marked region
 		 ("C-x t u" . text-categories-change-region-category)
 		 ;; toggle the visibility of a certain category
-		 ("C-x t h" . text-categories-toggle-hidden)))
+		 ("C-x t h" . text-categories-toggle-hidden)
+		 ;; store or restore a certain category
+		 ("C-x t s" . text-categories-store-restore)))
 #+END_SRC
 
 To enable text-categories automatically whenever a file is loaded that has a corresponding text-categories file call the function
