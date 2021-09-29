@@ -91,8 +91,10 @@
       (progn
 	(setq-local text-categories-suppress-changes t)
 	(let* ((data (text-categories-load (text-categories-filename)))
-	       (foundmap (car data))
-	       (catstring (cdr data)))
+	       (stored (nth 0 data))
+	       (foundmap (nth 1 data))
+	       (catstring (nth 2 data)))
+	  (setq-local text-categories-stored stored)
 	  (save-excursion
 	    (goto-char (point-min))
 	    (while (not (eobp))
@@ -373,7 +375,7 @@
 	(while (not (eobp))
 	  (setq catstring (concat catstring (string (cdr (assoc (get-text-property (point) 'text-categories-category) foundmap)))))
 	  (forward-char)))
-      (text-categories-dump (cons foundmap catstring) (text-categories-filename)))))
+      (text-categories-dump (list text-categories-stored foundmap catstring) (text-categories-filename)))))
 
 (defun text-categories-enable-hooks ()
   "Add text categories hooks."
