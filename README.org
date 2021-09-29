@@ -18,7 +18,7 @@ Below there is a listing of the commands provided by this package and their purp
 - ~text-categories-visualize~: Shows the contents of the current buffer in a new buffer with each character highlighted according to its category.
 - ~text-categories-change-region-category~: Changes the category of each character in the selected region to the one the user inputs.
 - ~text-categories-toggle-hidden~: Toggles the visibility of characters belonging to a certain category.
-- ~text-categories-store-restore~: Asks for a category from the user. If characters of that category exist in the current buffer, it deletes them but stores their positions in memory. The user cannot change the category to be one that is stored from then on. If this function is called and the category given by the user is already stored, it restores it inserting all the caracters belonging to it to their original position. Note that this position will be altered according to the insertions and deletions the user makes while a category is stored. After a category is restored, the user can select it again as normal.
+- ~text-categories-store-restore~: Asks for a category from the user. If characters of that category exist in the current buffer, it deletes them but stores their positions in memory. The user cannot change the category to be one that is stored from then on. If this function is called and the category given by the user is already stored, it restores it inserting all the caracters belonging to it to their original position. Note that this position will be updated according to the insertions and deletions the user makes while a category is stored. After a category is restored, the user can select it again as normal.
 
 ** Installation
 
