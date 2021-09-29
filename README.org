@@ -8,7 +8,7 @@ A very general usage example can be seen in this gif. Debug words represent the 
 [[resources/example.gif]]
 
 ** Package reference:
-- Inline code src_sh[:exports code]{echo -e "test"}
+- Inline code ~echo -e "test"~
 
 ** Installation
 
