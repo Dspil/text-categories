@@ -1,5 +1,5 @@
 * Emacs text-categories package
-When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default. It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories of characters from the file in stead of setting them to the default one.
+When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default. It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories (and the stored ones, see [[#Package reference][reference]]) of characters from the file in stead of setting them to the default one.
 
 ** Usage example
 
@@ -7,11 +7,12 @@ A very general usage example can be seen in this gif. Debug words represent the 
 
 [[resources/example.gif]]
 
-** Package reference:
+** Package reference
+
 Below there is a listing of the commands provided by this package and their purpose.
 
 - ~text-categories~: Toggles text categories (enabled-disabled) in the current buffer.
-- ~text-categories-change~: Changes the active category to a new one with any string as a name.
+- ~text-categories-change~: Changes the active category to a new one with any string as a name. Calling it when text-categories are not active causes them to activate.
 - ~text-categories-delete~: Deletes every character belonging to a category given by the user.
 - ~text-categories-reset~: Sets the category to be the default one. The package holds the default category in the variable ~text-categories-default~ and its default value is "0". The user can change the value of this variable to have a different default category.
 - ~text-categories-report~: Prints the current active category and all the categories existing in the current buffer.
