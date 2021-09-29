@@ -231,9 +231,11 @@
   (interactive "r")
   (when mark-active
     (let ((cat (call-interactively 'text-categories-get)))
-      (setq text-categories-suppress-changes t)
-      (put-text-property start end 'text-categories-category cat)
-      (setq text-categories-suppress-changes nil)))
+      (if (assoc cat text-categories-stored)
+	  (message "Cannot update region category to a stored one.")
+	(setq text-categories-suppress-changes t)
+	(put-text-property start end 'text-categories-category cat)
+	(setq text-categories-suppress-changes nil))))
   (when (not mark-active) (message "Mark is inactive.")))
 
 (defun text-categories-toggle-hidden (category)
