@@ -309,6 +309,7 @@
   "Restore the characters belonging to CATEGORY."
   (interactive "sEnter category: ")
   (when text-categories
+    (save-excursion
     (let ((stored (assoc category text-categories-stored)))
       (if (not stored)
 	  (message "No such category stored.")
@@ -323,7 +324,7 @@
 	      (put-text-property catstart (1+ catend) 'text-categories-category category)
 	      (setq regions (cdr regions)))))
 	(setq-local text-categories-stored (assoc-delete-all category text-categories-stored))
-	(setq text-categories-suppress-changes nil)))))
+	(setq text-categories-suppress-changes nil))))))
 
 (defun text-categories-store-restore (category)
   "If CATEGORY is not stored, store it, else restore it."
