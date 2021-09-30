@@ -85,6 +85,10 @@
 	(forward-char)))
     found))
 
+(defun text-categories-list-stored ()
+  "Return the stored categories."
+  (cl-map 'list 'car text-categories-stored))
+
 (defun text-categories-load-categories ()
   "Load categories from file if it exists."
   (if (file-exists-p (text-categories-filename))
@@ -115,15 +119,22 @@
   "Make an association list of FOUND categories with cycling the colorwheel."
   (text-categories-color-map-helper found '() '()))
 
-(defun text-categories-make-legend (found)
-  "Print the description of the visualization buffer for FOUND categories."
-  (let ((str "Helper Buffer for inspecting text categories.\nCategories are:\n")
+(defun text-categories-make-legend (found stored)
+  "Print the description of the visualization buffer for FOUND and STORED categories."
+  (let ((str "Helper Buffer for inspecting text categories.\nCategories in buffer:\n")
 	(nostart nil))
     (while (> (length found) 0)
       (setq str (concat str (and nostart " | ") (propertize (car found) 'text-categories-category (car found))))
       (setq nostart t)
       (setq found (cdr found)))
-    (insert  str "\nBuffer contents:\n\n")))
+    (when stored
+      (setq str(concat str "\nStored categories:\n"))
+      (setq nostart nil)
+      (while (> (length stored) 0)
+	(setq str (concat str (and nostart " | ") (propertize (car stored) 'text-categories-category (car stored))))
+	(setq nostart t)
+	(setq stored (cdr stored))))
+    (insert str "\nBuffer contents:\n\n")))
 
 ;; enable-disable
 
@@ -209,12 +220,15 @@
   (if text-categories
       (progn
 	(let* ((name (buffer-name))
-	       (found (text-categories-list))
-	       (cmap (text-categories-color-map found)))
+	       (found (sort (text-categories-list) 'string-lessp))
+	       (stored (sort (text-categories-list-stored) 'string-lessp))
+	       (cmap (text-categories-color-map (sort (cl-concatenate 'list stored found) 'string-lessp))))
+	  (message "%s %s" found stored)
 	  (with-current-buffer (get-buffer-create (text-categories-viz-buffer))
+	    (message "%s %s dio" found stored)
 	    (setq-local buffer-read-only nil)
 	    (erase-buffer)
-	    (text-categories-make-legend found)
+	    (text-categories-make-legend found stored)
 	    (insert-buffer-substring name)
 	    (goto-char (point-min))
 	    (while (not (eobp))
