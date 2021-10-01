@@ -42,11 +42,12 @@
 (defvar-local text-categories-file-prefix "~text_categories::" "The prefix of text categories files.")
 (defvar-local text-categories-viz-prefix "~text_categories_viz::" "The prefix of text categories vizualization buffer.")
 (defvar-local text-categories-stored '() "Assoc list holding all the stored categories.")
+(defvar-local text-categories-default-cycle '("0" "1") "Default categories to cycle them easily.")
 
 (defvar text-categories-save t "If t, saving the buffer saves the text categories of its characters.")
 (defvar text-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization.")
 
-;; logic
+;; helper functions
 
 (defun text-categories-viz-buffer ()
   "Return a visualization buffer name corresponding to the current buffer."
@@ -136,6 +137,16 @@
 	(setq stored (cdr stored))))
     (insert str "\nBuffer contents:\n\n")))
 
+(defun text-categories-list-next (l i)
+  "Get the next item in list L from item I cycling to the first item if I is the last one."
+  (text-categories-list-next-helper l i (car l)))
+
+(defun text-categories-list-next-helper (l i first)
+  "Get the next item in list L from item I cycling to FIRST item if I is the last one."
+  (if (equal (car l) i)
+      (if (not (cdr l)) first (nth 1 l))
+    (text-categories-list-next-helper (cdr l) i first)))
+
 ;; enable-disable
 
 (defun text-categories-enable ()
@@ -223,9 +234,7 @@
 	       (found (sort (text-categories-list) 'string-lessp))
 	       (stored (sort (text-categories-list-stored) 'string-lessp))
 	       (cmap (text-categories-color-map (sort (cl-concatenate 'list stored found) 'string-lessp))))
-	  (message "%s %s" found stored)
 	  (with-current-buffer (get-buffer-create (text-categories-viz-buffer))
-	    (message "%s %s dio" found stored)
 	    (setq-local buffer-read-only nil)
 	    (erase-buffer)
 	    (text-categories-make-legend found stored)
@@ -349,6 +358,45 @@
     (if (assoc category text-categories-stored)
 	(text-categories-restore-category category)
       (text-categories-store-category category))))
+
+(defun text-categories-cycle-line ()
+  "Cycle through the default categories cycle to the next one for this line."
+  (interactive)
+  (when (not text-categories)
+    (text-categories-enable))
+  (save-excursion
+    (setq text-categories-suppress-changes t)
+    (let ((prevpoint (point))
+	  (beg 0)
+	  (end 0)
+	  (found '()))
+      (while (not (or (bobp) (equal (char-before) ?\n)))
+	(backward-char))
+      (setq beg (point))
+      (goto-char prevpoint)
+      (while (not (or (eobp) (equal (char-after) ?\n)))
+	(forward-char))
+      (setq end (point))
+      (when (equal (char-after) ?\n)
+	(setq end (1+ end)))
+      (goto-char beg)
+      (while (not (equal (point) end))
+	(let ((property (get-text-property (point) 'text-categories-category)))
+	  (unless (member property found)
+	    (setq found (cons property found))))
+	(forward-char))
+      (if (not (equal (length found) 1))
+	  (progn
+	    (put-text-property beg end 'text-categories-category (car text-categories-default-cycle))
+	    (message "Category of line changed to: %s" (car text-categories-default-cycle)))
+	(let ((cat (car found)))
+	  (if (member cat text-categories-default-cycle)
+	      (let ((newcat (text-categories-list-next text-categories-default-cycle cat)))
+		(put-text-property beg end 'text-categories-category newcat)
+		(message "Category of line changed to: %s" newcat))
+	    (put-text-property beg end 'text-categories-category (car text-categories-default-cycle))
+	    (message "Category of line changed to: %s" (car text-categories-default-cycle))))))
+    (setq text-categories-suppress-changes nil)))
 
 ;; hooks
 

@@ -20,6 +20,16 @@ Below there is a listing of the commands provided by this package and their purp
 - ~text-categories-change-region-category~: Changes the category of each character in the selected region to the one the user inputs.
 - ~text-categories-toggle-hidden~: Toggles the visibility of characters belonging to a certain category.
 - ~text-categories-store-restore~: Asks for a category from the user. If characters of that category exist in the current buffer, it deletes them but stores their positions in memory. The user cannot change the category to be one that is stored from then on. If this function is called and the category given by the user is already stored, it restores it inserting all the caracters belonging to it to their original position. Note that this position will be updated according to the insertions and deletions the user makes while a category is stored. After a category is restored, the user can select it again as normal.
+- ~text-categories-cycle-line~: Changes the category of all characters in the current line to the next one in the ~text-categories-default-cycle~ list. If not all characters have the same category in the current line or their category doesn't belong to the ~text-categories-default-cycle~, the category selected is the first item of ~text-categories-default-cycle~.
+
+Below there is a listing of important variables that the user can customize in this package and their purpose.
+
+- ~text-categories-default~: Holds the default category. When enabling text categories in a buffer, this will be the category of all characters in the buffer.
+- ~text-categories-file-prefix~: Holds the prefix of the helper file created when saving a buffer with text categories enabled in it. When loading a file and the helper file exists in the same directory, text categories are enabled and loaded from the helper file. This is not the default behaviour but can be achieved by calling ~text-categories-enable-on-find-file~ after loading the package. In the default behaviour the categories saved in the helper file can be loaded simply by enabling typing categories after a file is opened in its buffer.
+- ~text-categories-viz-prefix~: The visualization buffer prefix.
+- ~text-categories-default-cycle~: List holding the categories to cycle through on a line when ~text-categories-cycle-line~ is called.
+- ~text-categories-save~: When this variable is ~t~, saving the current buffer results in creating a helper file holding the categories assigned to characters at that time. This can be disabled by setting this variable to ~nil~.
+- ~text-categories-colorwheel~: List of colors used in the visualization buffer. The visualization process will cycle through them for each category so if more categories than colors in this variable exist, some categories will have the same color.
 
 ** Installation
 
@@ -43,7 +53,7 @@ The keybindings can be set using:
 #+BEGIN_SRC emacs-lisp
 	;; toggle text category mode
 	(global-set-key (kbd "C-x t t") 'text-categories)
-	;; change text category number (0-9)
+	;; change text category
 	(global-set-key (kbd "C-x t c") 'text-categories-change)
 	;; delete characters belonging to a text category
 	(global-set-key (kbd "C-x t d") 'text-categories-delete)
@@ -59,6 +69,8 @@ The keybindings can be set using:
 	(global-set-key (kbd "C-x t h") 'text-categories-toggle-hidden)
 	;; store or restore a certain category
 	(global-set-key (kbd "C-x t s") 'text-categories-store-restore)
+	;; cycle the category of the current line
+	(global-set-key (kbd "C-x t n") 'text-categories-cycle-line)
 #+END_SRC
 
 Or it can be set up using use-package (if you have already added its path to the 'load-path):
@@ -68,7 +80,7 @@ Or it can be set up using use-package (if you have already added its path to the
 		:bind (
 		 ;; toggle text category mode
 		 ("C-x t t" . text-categories)
-		 ;; change text category number (0-9)
+		 ;; change text category
 		 ("C-x t c" . text-categories-change)
 		 ;; delete characters belonging to a text category
 		 ("C-x t d" . text-categories-delete)
@@ -83,7 +95,9 @@ Or it can be set up using use-package (if you have already added its path to the
 		 ;; toggle the visibility of a certain category
 		 ("C-x t h" . text-categories-toggle-hidden)
 		 ;; store or restore a certain category
-		 ("C-x t s" . text-categories-store-restore)))
+		 ("C-x t s" . text-categories-store-restore)
+		 ;; cycle the category of the current line
+		 ("C-x t n" . text-categories-cycle-line)))
 #+END_SRC
 
 To enable text-categories automatically whenever a file is loaded that has a corresponding text-categories file call the function
