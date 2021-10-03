@@ -104,7 +104,7 @@ To enable text-categories automatically whenever a file is loaded that has a cor
 
 after the package is loaded.
 
-If you don't want text-categories to save create the helper files for persistence, it can be disabled with:
+If you don't want text-categories to create the helper files for persistence, it can be disabled with:
 
 #+BEGIN_SRC emacs-lisp
 	(setq text-categories-save nil)
