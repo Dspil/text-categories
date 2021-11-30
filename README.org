@@ -25,10 +25,10 @@ Below there is a listing of the commands provided by this package and their purp
 Below there is a listing of important variables that the user can customize in this package and their purpose.
 
 - ~text-categories-default~: Holds the default category. When enabling text categories in a buffer, this will be the category of all characters in the buffer.
-- ~text-categories-file-prefix~: Holds the prefix of the helper file created when saving a buffer with text categories enabled in it. When loading a file and the helper file exists in the same directory, text categories are enabled and loaded from the helper file. This is not the default behaviour but can be achieved by calling ~text-categories-enable-on-find-file~ after loading the package. In the default behaviour the categories saved in the helper file can be loaded simply by enabling typing categories after a file is opened in its buffer.
+- ~text-categories-file-prefix~: Holds the prefix of the helper file created when killing a buffer with text categories enabled in it. When loading a file and the helper file exists in the same directory, text categories are enabled and loaded from the helper file. This is not the default behaviour but can be achieved by calling ~text-categories-enable-on-find-file~ after loading the package. In the default behaviour the categories saved in the helper file can be loaded simply by enabling typing categories after a file is opened in its buffer.
 - ~text-categories-viz-prefix~: The visualization buffer prefix.
 - ~text-categories-default-cycle~: List holding the categories to cycle through on a line when ~text-categories-cycle-line~ is called.
-- ~text-categories-save~: When this variable is ~t~, saving the current buffer results in creating a helper file holding the categories assigned to characters at that time. This can be disabled by setting this variable to ~nil~.
+- ~text-categories-save~: When this variable is ~t~, killing the current buffer results in creating a helper file holding the categories assigned to characters at that time. This can be disabled by setting this variable to ~nil~.
 - ~text-categories-colorwheel~: List of colors used in the visualization buffer. The visualization process will cycle through them for each category so if more categories than colors in this variable exist, some categories will have the same color.
 
 ** Installation
