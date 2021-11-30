@@ -44,7 +44,7 @@
 (defvar-local text-categories-stored '() "Assoc list holding all the stored categories.")
 (defvar-local text-categories-default-cycle '("0" "1") "Default categories to cycle them easily.")
 
-(defvar text-categories-save t "If t, saving the buffer saves the text categories of its characters.")
+(defvar text-categories-save t "If t, closing the buffer saves the text categories of its characters.")
 (defvar text-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization.")
 
 ;; helper functions
@@ -199,17 +199,19 @@
   (interactive "sEnter category to delete: ")
   (when text-categories
     (setq-local text-categories-suppress-changes t)
-    (let ((prevpoint (point)))
-      (goto-char (point-min))
-      (while (not (eobp))
-	(if (equal (get-text-property (point) 'text-categories-category) category)
-	    (progn
-	      (delete-char 1)
-	      (when (<= (point) prevpoint)
-		(setq prevpoint (1- prevpoint))))
-	  (forward-char)))
-      (goto-char prevpoint)
-      (setq-local text-categories-suppress-changes nil)))
+    (if (assoc category text-categories-stored)
+	(setq-local text-categories-stored (assoc-delete-all category text-categories-stored))
+      (let ((prevpoint (point)))
+	(goto-char (point-min))
+	(while (not (eobp))
+	  (if (equal (get-text-property (point) 'text-categories-category) category)
+	      (progn
+		(delete-char 1)
+		(when (<= (point) prevpoint)
+		  (setq prevpoint (1- prevpoint))))
+	    (forward-char)))
+	(goto-char prevpoint)
+	(setq-local text-categories-suppress-changes nil))))
   (when (not text-categories) (message "Text categories are not active.")))
 
 (defun text-categories-report ()
@@ -432,7 +434,7 @@
 				(cdr cat))))
 		   text-categories-stored)))
 
-(defun text-categories-after-save-fun ()
+(defun text-categories-save-categories ()
   "Save the text categories of characters of the saved buffer in a file for later use."
   (when (and text-categories (> (point-max) 1))
     (let* ((found (text-categories-list))
@@ -450,13 +452,13 @@
   (add-hook 'after-change-functions 'text-categories-after-changes-fun t t)
   (add-hook 'kill-buffer-hook 'text-categories-kill-viz)
   (when text-categories-save
-    (add-hook 'after-save-hook 'text-categories-after-save-fun)))
+    (add-hook 'kill-buffer-hook 'text-categories-save-categories)))
 
 (defun text-categories-disable-hooks ()
   "Remove all text categories hooks."
   (remove-hook 'after-change-functions 'text-categories-after-changes-fun t)
   (remove-hook 'kill-buffer-hook 'text-categories-kill-viz)
-  (remove-hook 'after-save-hook 'text-categories-after-save-fun))
+  (remove-hook 'kill-buffer-hook 'text-categories-save-categories))
 
 (provide 'text-categories)
 
