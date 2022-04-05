@@ -46,6 +46,8 @@
 
 (defvar text-categories-save t "If t, closing the buffer saves the text categories of its characters.")
 (defvar text-categories-colorwheel '("dark orange" "deep pink" "chartreuse" "deep sky blue" "yellow" "orchid" "spring green" "sienna1") "Contains the colors of the categories to show in the visualization.")
+(defvar-local text-categories-legend-size 0 "Stores the size of the legend.  Only used in the visualization buffer.")
+(defvar-local text-categories-buffer nil "Stores the buffer to which a visualization buffer corresponds.")
 
 ;; helper functions
 
@@ -154,6 +156,9 @@
   (setq-local text-categories t)
   (setq-local text-categories-category text-categories-default)
   (setq-local text-categories-stored '())
+  (setq global-mode-string (or global-mode-string '("")))
+  (unless (member '(:eval (text-categories-mode-line)) global-mode-string)
+    (setq global-mode-string (append global-mode-string '((:eval (text-categories-mode-line))))))
   (if text-categories-save
       (text-categories-load-categories)
     (put-text-property (point-min) (point-max) 'text-categories-category text-categories-default))
@@ -192,7 +197,8 @@
   (unless text-categories (text-categories-enable))
   (if (assoc category text-categories-stored)
       (message "Can't change to a stored category.")
-    (setq-local text-categories-category category)))
+    (setq-local text-categories-category category)
+    (force-mode-line-update)))
 
 (defun text-categories-delete (category)
   "Delete each character belonging to text category CATEGORY."
@@ -217,9 +223,9 @@
 (defun text-categories-report ()
   "Report the current text category and all the categories that exist in the buffer."
   (interactive)
-  (when text-categories
-    (message "Current text category: %s\nCategories in buffer: %s" text-categories-category (text-categories-list)))
-  (when (not text-categories) (message "Text categories are not active.")))
+  (if text-categories
+      (message "Current text category: %s\nCategories in buffer: %s" text-categories-category (text-categories-list))
+    (message "Text categories are not active.")))
 
 (defun text-categories-reset ()
   "Reset the text category to the default one."
@@ -239,10 +245,13 @@
 	             (point-to-go 0)
 	             (curpoint (point)))
 	        (with-current-buffer (get-buffer-create (text-categories-viz-buffer))
+            (text-categories-viz-mode)
 	          (setq-local buffer-read-only nil)
+            (setq-local text-categories-buffer name)
 	          (erase-buffer)
 	          (text-categories-make-legend found stored)
 	          (setq point-to-go (point-max))
+            (setq-local text-categories-legend-size (point-max))
 	          (insert-buffer-substring name)
 	          (goto-char (point-min))
 	          (while (not (eobp))
@@ -459,6 +468,79 @@
   (remove-hook 'after-change-functions 'text-categories-after-changes-fun t)
   (remove-hook 'kill-buffer-hook 'text-categories-kill-viz)
   (remove-hook 'kill-buffer-hook 'text-categories-save-categories))
+
+;; modeline
+
+(defun text-categories-mode-line ()
+  "Return the mode line string."
+  (if text-categories
+      (format " TC: %s" text-categories-category)
+    ""))
+
+;; visualization buffer major mode
+
+(defun text-categories-jump-to-point ()
+  "Jump from the visualization buffer to the same point in the original buffer."
+  (interactive)
+  (let ((point (1+ (- (point) text-categories-legend-size))))
+    (pop-to-buffer text-categories-buffer)
+    (goto-char point)))
+
+(defun text-categories-next-instance ()
+  "Jump to the next instance of this text category in the visualization buffer."
+  (interactive)
+  (let ((cat (get-text-property (point) 'text-categories-category))
+        (escaped nil)
+        (where nil)
+        (control t))
+    (save-excursion
+      (while (and control (not (equal (point) (point-max))))
+        (forward-char)
+        (let ((cur-prop (get-text-property (point) 'text-categories-category)))
+          (if (and escaped (equal cat cur-prop))
+              (progn
+                (setq where (point))
+                (setq control nil))
+            (when (not (equal cat cur-prop))
+              (setq escaped t))))))
+    (if where
+        (goto-char where)
+      (message "No further instances of category %s" cat))))
+
+(defun text-categories-prev-instance ()
+  "Jump to the previous instance of this text category in the visualization buffer."
+  (interactive)
+  (let ((cat (get-text-property (point) 'text-categories-category))
+        (escaped nil)
+        (where nil)
+        (control t))
+    (save-excursion
+      (while (and control (not (equal (point) (point-min))))
+        (backward-char)
+        (let ((cur-prop (get-text-property (point) 'text-categories-category)))
+          (if (and escaped (equal cat cur-prop))
+              (progn
+                (setq where (point))
+                (setq control nil))
+            (when (not (equal cat cur-prop))
+              (setq escaped t))))))
+    (if where
+        (goto-char where)
+      (message "No further instances of category %s" cat))))
+
+(defvar text-categories-viz-mode-map nil "Keymap for text-categories-viz.")
+
+(when (not text-categories-viz-mode-map)
+  (setq text-categories-viz-mode-map (make-sparse-keymap))
+  (define-key text-categories-viz-mode-map (kbd "RET") 'text-categories-jump-to-point)
+  (define-key text-categories-viz-mode-map (kbd "n") 'text-categories-next-instance)
+  (define-key text-categories-viz-mode-map (kbd "p") 'text-categories-prev-instance))
+
+(define-derived-mode text-categories-viz-mode fundamental-mode
+  "text-categories-viz mode"
+  "Major mode for text-categories visualization buffer"
+  (use-local-map text-categories-viz-mode-map)
+  (read-only-mode t))
 
 (provide 'text-categories)
 
