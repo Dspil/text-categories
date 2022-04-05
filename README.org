@@ -1,5 +1,5 @@
 * Emacs text-categories package
-When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default. It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. Finally a category can be deleted leaving only the characters belonging to all the other active categories. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories (and the stored ones, see ~text-categories-store-restore~) of characters from the file in stead of setting them to the default one.
+When debugging code, it is not unusual to insert print statements and other temporary code in the program to locate the bugs. After locating all of them, it is impossible to undo or revert just the code used for debugging because it will revert the bug corrections too. This package defines a text category for inserted text. All text inserted belongs to text category "0" by default. It is possible to instruct the package to change the text category to any string. Everything inserted from that moment and after will belong to the new text category. A category can be deleted leaving only the characters belonging to all the other active categories or stored for later use. When saving the current buffer on a file, the default behaviour is to create a helper file containing the text categories of characters in the buffer. When enabling text categories in a buffer that has such a file in that directory, it loads the text categories (and the stored ones, see ~text-categories-store-restore~) of characters from the file in stead of setting them to the default one.
 
 ** Usage example
 
@@ -30,6 +30,14 @@ Below there is a listing of important variables that the user can customize in t
 - ~text-categories-default-cycle~: List holding the categories to cycle through on a line when ~text-categories-cycle-line~ is called.
 - ~text-categories-save~: When this variable is ~t~, killing the current buffer results in creating a helper file holding the categories assigned to characters at that time. This can be disabled by setting this variable to ~nil~.
 - ~text-categories-colorwheel~: List of colors used in the visualization buffer. The visualization process will cycle through them for each category so if more categories than colors in this variable exist, some categories will have the same color.
+
+** The visualisation buffer
+
+The visualisation buffer depicts the categories present in the original buffer. It has ~text-categories-viz-mode~ as its major mode and defines the following keybindings by default:
+
+- ~n~: Go to the next occurence (ignoring adjascent characters) of the same category as the one where the cursor is now.
+- ~p~: Go to the previous occurence (ignoring adjascent characters) of the same category as the one where the cursor is now.
+- ~RET~: Go to the original buffer at the same point.
 
 ** Installation
 
