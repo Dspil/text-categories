@@ -494,7 +494,7 @@
         (where nil)
         (control t))
     (save-excursion
-      (while (and control (not (equal (point) (point-max))))
+      (while (and control (not (eobp)))
         (forward-char)
         (let ((cur-prop (get-text-property (point) 'text-categories-category)))
           (if (and escaped (equal cat cur-prop))
@@ -515,7 +515,7 @@
         (where nil)
         (control t))
     (save-excursion
-      (while (and control (not (equal (point) (point-min))))
+      (while (and control (not (bobp)))
         (backward-char)
         (let ((cur-prop (get-text-property (point) 'text-categories-category)))
           (if (and escaped (equal cat cur-prop))
