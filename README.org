@@ -55,25 +55,25 @@ An example of setting the keybindings:
 
 #+BEGIN_SRC emacs-lisp
 	;; toggle text category mode
-	(global-set-key (kbd "C-x t t") 'text-categories)
+	(global-set-key (kbd "C-c t t") 'text-categories)
 	;; change text category
-	(global-set-key (kbd "C-x t c") 'text-categories-change)
+	(global-set-key (kbd "C-c t c") 'text-categories-change)
 	;; delete characters belonging to a text category
-	(global-set-key (kbd "C-x t d") 'text-categories-delete)
+	(global-set-key (kbd "C-c t d") 'text-categories-delete)
 	;; set the text category to the default one
-	(global-set-key (kbd "C-x t r") 'text-categories-reset)
+	(global-set-key (kbd "C-c t r") 'text-categories-reset)
 	;; report the current text category
-	(global-set-key (kbd "C-x t p") 'text-categories-report)
+	(global-set-key (kbd "C-c t p") 'text-categories-report)
 	;; visualize categories in buffer
-	(global-set-key (kbd "C-x t v") 'text-categories-visualize)
+	(global-set-key (kbd "C-c t v") 'text-categories-visualize)
 	;; change the category of the marked region
-	(global-set-key (kbd "C-x t u") 'text-categories-change-region-category)
+	(global-set-key (kbd "C-c t u") 'text-categories-change-region-category)
 	;; toggle the visibility of a certain category
-	(global-set-key (kbd "C-x t h") 'text-categories-toggle-hidden)
+	(global-set-key (kbd "C-c t h") 'text-categories-toggle-hidden)
 	;; store or restore a certain category
-	(global-set-key (kbd "C-x t s") 'text-categories-store-restore)
+	(global-set-key (kbd "C-c t s") 'text-categories-store-restore)
 	;; cycle the category of the current line
-	(global-set-key (kbd "C-x t n") 'text-categories-cycle-line)
+	(global-set-key (kbd "C-c t n") 'text-categories-cycle-line)
 #+END_SRC
 
 Or it can be set up using use-package:
@@ -83,25 +83,25 @@ Or it can be set up using use-package:
 		:ensure t ;; install it automatically if it doesn't exist
 		:bind (
 		 ;; toggle text category mode
-		 ("C-x t t" . text-categories)
+		 ("C-c t t" . text-categories)
 		 ;; change text category
-		 ("C-x t c" . text-categories-change)
+		 ("C-c t c" . text-categories-change)
 		 ;; delete characters belonging to a text category
-		 ("C-x t d" . text-categories-delete)
+		 ("C-c t d" . text-categories-delete)
 		 ;; set the text category to the default one
-		 ("C-x t r" . text-categories-reset)
+		 ("C-c t r" . text-categories-reset)
 		 ;; report the current text category
-		 ("C-x t p" . text-categories-report)
+		 ("C-c t p" . text-categories-report)
 		 ;; visualize categories in buffer
-		 ("C-x t v" . text-categories-visualize)
+		 ("C-c t v" . text-categories-visualize)
 		 ;; change the category of the marked region
-		 ("C-x t u" . text-categories-change-region-category)
+		 ("C-c t u" . text-categories-change-region-category)
 		 ;; toggle the visibility of a certain category
-		 ("C-x t h" . text-categories-toggle-hidden)
+		 ("C-c t h" . text-categories-toggle-hidden)
 		 ;; store or restore a certain category
-		 ("C-x t s" . text-categories-store-restore)
+		 ("C-c t s" . text-categories-store-restore)
 		 ;; cycle the category of the current line
-		 ("C-x t n" . text-categories-cycle-line)))
+		 ("C-c t n" . text-categories-cycle-line)))
 #+END_SRC
 
 To enable text-categories automatically whenever a file is loaded that has a corresponding text-categories file call the function
