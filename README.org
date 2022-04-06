@@ -35,8 +35,10 @@ Below there is a listing of important variables that the user can customize in t
 
 The visualisation buffer depicts the categories present in the original buffer. It has ~text-categories-viz-mode~ as its major mode and defines the following keybindings by default:
 
-- ~n~: Go to the next occurence (ignoring adjascent characters) of the same category as the one where the cursor is now.
-- ~p~: Go to the previous occurence (ignoring adjascent characters) of the same category as the one where the cursor is now.
+- ~n~: Go to the next occurence (ignoring adjacent characters) of the same category as the one where the cursor is now.
+- ~p~: Go to the previous occurence (ignoring adjacent characters) of the same category as the one where the cursor is now.
+- ~m~: Mark all the adjacent to the point characters that have the same category as the one where the cursor is now.
+- ~u~: Update the category of the active region.
 - ~RET~: Go to the original buffer at the same point.
 
 ** Installation
