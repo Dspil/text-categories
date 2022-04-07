@@ -171,10 +171,7 @@
   (text-categories-disable-hooks)
   (text-categories-kill-viz)
   (when (buffer-file-name)
-    (let ((text-categories-file
-	         (concat
-	          (file-name-directory (buffer-file-name))
-	          (concat text-categories-file-prefix (file-name-nondirectory (buffer-file-name))))))
+    (let ((text-categories-file (text-categories-filename)))
       (when (file-exists-p text-categories-file)
 	      (delete-file text-categories-file))))
   (message "Text categories disabled"))
