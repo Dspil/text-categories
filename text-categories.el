@@ -38,8 +38,8 @@
 (defvar-local text-categories nil "Tracks whether text-categories is enabled.")
 (defvar-local text-categories-category nil "Tracks the current text category number.\nCan be a single digit number.")
 (defvar-local text-categories-suppress-changes nil "Tracks whether we are deleting right now.")
-(defvar-local text-categories-default "0" "Holds the default text category number.")
-(defvar-local text-categories-file-prefix "~text_categories::" "The prefix of text categories files.")
+(defvar-local text-categories-default "0" "Holds the default text category string.")
+(defvar-local text-categories-file-suffix "~text_categories::" "The suffix of text categories files.")
 (defvar-local text-categories-viz-prefix "~text_categories_viz::" "The prefix of text categories vizualization buffer.")
 (defvar-local text-categories-stored '() "Assoc list holding all the stored categories.")
 (defvar-local text-categories-default-cycle '("0" "1") "Default categories to cycle them easily.")
@@ -62,7 +62,7 @@
 
 (defun text-categories-filename ()
   "Return a filename corresponding to the current buffer."
-  (concat text-categories-file-prefix (buffer-name)))
+  (concat (buffer-name) text-categories-file-suffix))
 
 (defun text-categories-dump (data filename)
   "Dump DATA in the file FILENAME."
@@ -94,7 +94,7 @@
 
 (defun text-categories-load-categories ()
   "Load categories from file if it exists."
-  (if (file-exists-p (text-categories-filename))
+  (if (and (buffer-file-name) (file-exists-p (text-categories-filename)))
       (progn
 	      (setq-local text-categories-suppress-changes t)
 	      (let* ((data (text-categories-load (text-categories-filename)))
