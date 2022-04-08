@@ -474,6 +474,10 @@
       (format " TC: %s" text-categories-category)
     ""))
 
+;; minor mode map
+
+
+
 ;; visualization buffer major mode
 
 (defun text-categories-jump-to-point ()
