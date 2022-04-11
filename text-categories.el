@@ -92,6 +92,10 @@
   "Return the stored categories."
   (cl-map 'list 'car text-categories-stored))
 
+(defun text-categories-list-all ()
+  "Return both the stored and present categories in the buffer."
+  (append (text-categories-list) (text-categories-list-stored)))
+
 (defun text-categories-load-categories ()
   "Load categories from file if it exists."
   (if (and (buffer-file-name) (file-exists-p (text-categories-filename)))
@@ -180,7 +184,7 @@
 
 (defun text-categories-get (category)
   "Get a CATEGORY from the user."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list) nil t)))
   category)
 
 (defun text-categories ()
@@ -190,7 +194,7 @@
 
 (defun text-categories-change (category)
   "Change the text category.\n CATEGORY: the category to change to."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list-all))))
   (unless text-categories (text-categories-enable))
   (if (assoc category text-categories-stored)
       (message "Can't change to a stored category.")
@@ -199,7 +203,7 @@
 
 (defun text-categories-delete (category)
   "Delete each character belonging to text category CATEGORY."
-  (interactive "sEnter category to delete: ")
+  (interactive (list (completing-read "Enter category to delete: " (text-categories-list-all) nil t)))
   (when text-categories
     (setq-local text-categories-suppress-changes t)
     (if (assoc category text-categories-stored)
@@ -279,7 +283,7 @@
 
 (defun text-categories-toggle-hidden (category)
   "Toggle the visibility of characters belonging to CATEGORY."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list-all) nil t)))
   (when text-categories
     (setq text-categories-suppress-changes t)
     (save-excursion
@@ -299,7 +303,7 @@
 
 (defun text-categories-store-category (category)
   "Store the characters belonging to CATEGORY for later restore."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list) nil t)))
   (when text-categories
     (if (assoc category text-categories-stored)
 	      (message "Can't store an already stored category.")
@@ -346,7 +350,7 @@
 
 (defun text-categories-restore-category (category)
   "Restore the characters belonging to CATEGORY."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list-stored) nil t)))
   (when text-categories
     (save-excursion
       (let ((stored (assoc category text-categories-stored)))
@@ -367,7 +371,7 @@
 
 (defun text-categories-store-restore (category)
   "If CATEGORY is not stored, store it, else restore it."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list-all) nil t)))
   (when text-categories
     (if (assoc category text-categories-stored)
 	      (text-categories-restore-category category)
@@ -560,9 +564,14 @@
           (setq-local buffer-read-only t)))
     (message "No active region.")))
 
+(defun text-categories-list-original-buffer ()
+  "List the categories found in the original buffer."
+  (with-current-buffer text-categories-buffer
+    (text-categories-list)))
+
 (defun text-categories-update-island-category (category)
   "Update the category of a marked region in the visualization buffer and at the original buffer to CATEGORY."
-  (interactive "sEnter category: ")
+  (interactive (list (completing-read "Enter category: " (text-categories-list-original-buffer) nil t)))
   (if (use-region-p)
       (let ((regionstart (1+ (- (mark) text-categories-legend-size)))
             (regionend (1+ (- (point) text-categories-legend-size))))
