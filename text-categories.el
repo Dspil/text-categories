@@ -258,7 +258,7 @@
 	          (insert-buffer-substring name)
 	          (goto-char (point-min))
 	          (while (not (eobp))
-	            (let* ((cat (get-text-property (point) 'text-categories-category))
+	            (let* ((cat (or (get-text-property (point) 'text-categories-category) text-categories-default))
 		                 (color (cdr (assoc cat cmap))))
 		            (put-text-property (point) (1+ (point)) 'face (list :foreground color)))
 	            (forward-char))
@@ -515,10 +515,6 @@
   (if text-categories
       (format " TC: %s" text-categories-category)
     ""))
-
-;; minor mode map
-
-
 
 ;; visualization buffer major mode
 
